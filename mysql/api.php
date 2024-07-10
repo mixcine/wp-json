@@ -1,0 +1,1 @@
+{"414906":"{\"pagina\":\"n/r\",\"date\":\"04:07:10-10/07/2024\",\"Ranking\":\"n/r\",\"rate\":\"76\",\"name\":\"Batman\",\"ids\":\"414906\",\"type\":\"filmes\",\"poster\":\"/wd7b4Nv9QBHDTIjc2m7sr0IUMoh.jpg\",\"banners\":\"/tRS6jvPM9qPrrnx2KRp3ew96Yot.jpg\",\"logos\":\"\",\"years\":\"2022-03-01\"}"}
