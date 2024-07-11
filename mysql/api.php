@@ -1,0 +1,1 @@
+{"155":"{\"ids\":\"155\",\"poster\":\"/vGYJRor3pCyjbaCpJKC39MpJhIT.jpg\",\"banners\":\"/oOv2oUXcAaNXakRqUPxYq5lJURz.jpg\",\"name\":\"Batman: O Cavaleiro das Trevas\",\"years\":\"2008-07-16\",\"rate\":\"85\",\"logos\":\"/nO5Uix3Qr4WjOyU1BMPv0okyNWm.png\",\"Ranking\":\"n/r\",\"pagina\":\"n/r\",\"type\":\"filmes\",\"date\":\"20:06:36-11/07/2024\"}"}
