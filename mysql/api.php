@@ -1,0 +1,1 @@
+{"299537":"{\"ids\":\"299537\",\"poster\":\"/rlFpYX8vd0wZskBcpaPrZUetwYb.jpg\",\"banners\":\"/c8RuOYaTC3tEG85GtQjEtoa7qkl.jpg\",\"name\":\"Capitã Marvel\",\"years\":\"2019-03-06\",\"rate\":\"68\",\"logos\":\"/gMrrdOoBpCvwSItNlwGSkdwu26m.png\",\"Ranking\":\"n/r\",\"pagina\":\"n/r\",\"type\":\"filmes\",\"date\":\"02:26:50-13/07/2024\"}"}
