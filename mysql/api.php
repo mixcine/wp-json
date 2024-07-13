@@ -1,0 +1,1 @@
+{"2661":"{\"ids\":\"2661\",\"poster\":\"/ocfATpIo0O4JYaDc5jpyePPG87k.jpg\",\"banner\":\"/bxxupqG6TBLKC60M6L8iOvbQEr6.jpg\",\"name\":\"Batman: O Homem Morcego\",\"genres\":\"Ação, Comédia, Crime\",\"rate\":\"63\",\"logos\":\"\",\"ranking\":\"n/r\",\"pagina\":\"n/r\",\"date\":\"13/07/2024 04:55\",\"type\":\"filmes\"}"}
