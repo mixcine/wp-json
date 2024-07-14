@@ -1,0 +1,1 @@
+{"414906":"{\"ids\":\"414906\",\"logos\":\"false\",\"poster\":\"wd7b4Nv9QBHDTIjc2m7sr0IUMoh.jpg\",\"banner\":\"tRS6jvPM9qPrrnx2KRp3ew96Yot.jpg\",\"name\":\"Batman\",\"genres\":\"Crime, Mistério, Thriller\",\"ranking\":\"false\",\"pagina\":\"false\",\"date\":\"14072024 02:46\",\"type\":\"filmes\"}"}
