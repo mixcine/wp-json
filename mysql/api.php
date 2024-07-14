@@ -1,0 +1,1 @@
+{"2661":"{\"ids\":\"2661\",\"poster\":\"ocfATpIo0O4JYaDc5jpyePPG87k.jpg\",\"banner\":\"\",\"name\":\"Batman: O Homem Morcego\",\"genres\":\"Ação, Comédia, Crime\",\"logos\":\"\",\"ranking\":\"tbc\",\"pagina\":\"false\",\"date\":\"14072024 02:17\",\"type\":\"filmes\"}"}
