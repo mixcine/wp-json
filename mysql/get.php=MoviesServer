@@ -1,1 +1,3 @@
-{"719221":"{\"ids\":\"719221\",\"language\":\"Dublado\",\"url\":\"Batman\",\"type\":\"filmes\"}"}
+{
+  "719221-1-1": "{\"ids\":\"719221-1-1\",\"language\":\"Dublado\",\"type\":\"series\", \"episodes\":[{\"episode_id\":\"719221-1-1-1\", \"urls\":[\"url1.mp4\", \"url2.mp4\"]}, {\"episode_id\":\"719221-1-1-2\", \"urls\":[\"url3.mp4\", \"url4.mp4\"]}]}"
+}
