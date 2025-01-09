@@ -1,3 +1,16 @@
 {
-  "719221-1-1": "{\"ids\":\"719221-1-1\",\"language\":\"Dublado\",\"type\":\"series\", \"episodes\":[{\"episode_id\":\"719221-1-1-1\", \"urls\":[\"url1.mp4\", \"url2.mp4\"]}, {\"episode_id\":\"719221-1-1-2\", \"urls\":[\"url3.mp4\", \"url4.mp4\"]}]}"
+  "series_id_1": {
+    "series_name": "Nome da Série 1",
+    "episodes": [
+      {"episode_id": "episode_1", "urls": ["url1.mp4", "url2.mp4"]},
+      {"episode_id": "episode_2", "urls": ["url3.mp4", "url4.mp4"]}
+    ]
+  },
+  "series_id_2": {
+    "series_name": "Nome da Série 2",
+    "episodes": [
+      {"episode_id": "episode_1", "urls": ["url5.mp4", "url6.mp4"]},
+      {"episode_id": "episode_2", "urls": ["url7.mp4", "url8.mp4"]}
+    ]
+  }
 }
