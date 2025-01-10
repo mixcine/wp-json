@@ -1,28 +1,30 @@
 {
-  "100074": {
-    "id": 100074,
-    "type": "series",
-    "episodes": {
-      "episode_1": {
-        "season": 1,
-        "episode": 1,
-        "url": "xyz"
-      },
-      "episode_2": {
-        "season": 2,
-        "episode": 2,
-        "url": "xyz"
-      },
-      "episode_3": {
-        "season": 1,
-        "episode": 3,
-        "url": "xyz"
-      },
-      "episode_4": {
-        "season": 1,
-        "episode": 4,
-        "url": "xyz"
-      }
+  "series": [
+    {
+      "id": 100074,
+      "type": "series",
+      "episodes": [
+        {
+          "season": 1,
+          "episode": 1,
+          "url": "xyz"
+        },
+        {
+          "season": 2,
+          "episode": 2,
+          "url": "xyz"
+        },
+        {
+          "season": 1,
+          "episode": 3,
+          "url": "xyz"
+        },
+        {
+          "season": 1,
+          "episode": 4,
+          "url": "xyz"
+        }
+      ]
     }
-  }
+  ]
 }
