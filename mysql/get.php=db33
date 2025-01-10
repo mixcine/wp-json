@@ -2,26 +2,29 @@
   "100074": {
     "id": 100074,
     "type": "series",
+    "season": 1,
+    "episode": 0,
+    "url": "main_url",
     "episodes": [
       {
         "season": 1,
         "episode": 1,
-        "url": "xyz"
+        "url": "xyz1"
       },
       {
         "season": 2,
         "episode": 2,
-        "url": "xyz"
+        "url": "xyz2"
       },
       {
         "season": 1,
         "episode": 3,
-        "url": "xyz"
+        "url": "xyz3"
       },
       {
         "season": 1,
         "episode": 4,
-        "url": "xyz"
+        "url": "xyz4"
       }
     ]
   }
