@@ -2,31 +2,27 @@
   "100074": {
     "id": 100074,
     "type": "series",
-    "seasons": {
-      "season_1": {
-        "episodes": {
-          "episode_1": {
-            "episode_number": 1,
-            "url": "xyz"
-          },
-          "episode_3": {
-            "episode_number": 3,
-            "url": "xyz"
-          },
-          "episode_4": {
-            "episode_number": 4,
-            "url": "xyz"
-          }
-        }
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "url": "xyz"
       },
-      "season_2": {
-        "episodes": {
-          "episode_2": {
-            "episode_number": 2,
-            "url": "xyz"
-          }
-        }
+      {
+        "season": 2,
+        "episode": 2,
+        "url": "xyz"
+      },
+      {
+        "season": 1,
+        "episode": 3,
+        "url": "xyz"
+      },
+      {
+        "season": 1,
+        "episode": 4,
+        "url": "xyz"
       }
-    }
+    ]
   }
 }
