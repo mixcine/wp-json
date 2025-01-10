@@ -1,1 +1,32 @@
-{"100074":{"season":1,"episode":2,"url":"xyz","type":"series","episodes":[{"season":1,"episode":4,"url":"xyz"}]}}
+{
+  "100074": {
+    "id": 100074,
+    "type": "series",
+    "seasons": {
+      "season_1": {
+        "episodes": {
+          "episode_1": {
+            "episode_number": 1,
+            "url": "xyz"
+          },
+          "episode_3": {
+            "episode_number": 3,
+            "url": "xyz"
+          },
+          "episode_4": {
+            "episode_number": 4,
+            "url": "xyz"
+          }
+        }
+      },
+      "season_2": {
+        "episodes": {
+          "episode_2": {
+            "episode_number": 2,
+            "url": "xyz"
+          }
+        }
+      }
+    }
+  }
+}
