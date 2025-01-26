@@ -1,1 +1,5 @@
-https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Ddb50
+[
+    "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/realtime%20database/Avatar",
+    "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dmovie",
+    "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dseries"
+]
