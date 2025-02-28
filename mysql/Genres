@@ -1,0 +1,142 @@
+[
+    {
+        "title": "NETFLIX",
+        "sobre": "Plataforma de streaming com filmes, séries e documentários.",
+        "poster": "https://exemplo.com/netflix.jpg"
+    },
+    {
+        "title": "Discovery +",
+        "sobre": "Serviço de streaming com documentários e programas de realidade.",
+        "poster": "https://exemplo.com/discovery.jpg"
+    },
+    {
+        "title": "Ação",
+        "sobre": "Filmes cheios de adrenalina, explosões e combates intensos.",
+        "poster": "https://exemplo.com/acao.jpg"
+    },
+    {
+        "title": "Action & Adventure",
+        "sobre": "Filmes e séries com aventuras emocionantes e muita ação.",
+        "poster": "https://exemplo.com/action_adventure.jpg"
+    },
+    {
+        "title": "Aventura",
+        "sobre": "Histórias emocionantes de exploração e descobertas.",
+        "poster": "https://exemplo.com/aventura.jpg"
+    },
+    {
+        "title": "Animação",
+        "sobre": "Filmes e séries animadas para todas as idades.",
+        "poster": "https://exemplo.com/animacao.jpg"
+    },
+    {
+        "title": "Comédia",
+        "sobre": "Filmes e séries para dar boas risadas.",
+        "poster": "https://exemplo.com/comedia.jpg"
+    },
+    {
+        "title": "Crime",
+        "sobre": "Histórias de investigação, mistério e suspense policial.",
+        "poster": "https://exemplo.com/crime.jpg"
+    },
+    {
+        "title": "Documentário",
+        "sobre": "Produções baseadas em fatos reais e histórias fascinantes.",
+        "poster": "https://exemplo.com/documentario.jpg"
+    },
+    {
+        "title": "Drama",
+        "sobre": "Narrativas emocionantes e envolventes.",
+        "poster": "https://exemplo.com/drama.jpg"
+    },
+    {
+        "title": "Família",
+        "sobre": "Conteúdo para todas as idades, ideal para assistir em família.",
+        "poster": "https://exemplo.com/familia.jpg"
+    },
+    {
+        "title": "Fantasia",
+        "sobre": "Mundos mágicos e histórias incríveis.",
+        "poster": "https://exemplo.com/fantasia.jpg"
+    },
+    {
+        "title": "História",
+        "sobre": "Filmes e séries baseados em eventos históricos.",
+        "poster": "https://exemplo.com/historia.jpg"
+    },
+    {
+        "title": "Kids",
+        "sobre": "Desenhos e programas infantis educativos e divertidos.",
+        "poster": "https://exemplo.com/kids.jpg"
+    },
+    {
+        "title": "Terror",
+        "sobre": "Filmes e séries de arrepiar, para quem gosta de sustos.",
+        "poster": "https://exemplo.com/terror.jpg"
+    },
+    {
+        "title": "News",
+        "sobre": "Notícias e atualizações do mundo.",
+        "poster": "https://exemplo.com/news.jpg"
+    },
+    {
+        "title": "Música",
+        "sobre": "Shows, clipes e documentários sobre artistas.",
+        "poster": "https://exemplo.com/musica.jpg"
+    },
+    {
+        "title": "Mistério",
+        "sobre": "Histórias intrigantes e cheias de enigmas.",
+        "poster": "https://exemplo.com/misterio.jpg"
+    },
+    {
+        "title": "Romance",
+        "sobre": "Filmes e séries com histórias de amor emocionantes.",
+        "poster": "https://exemplo.com/romance.jpg"
+    },
+    {
+        "title": "Reality",
+        "sobre": "Programas de competição e desafios da vida real.",
+        "poster": "https://exemplo.com/reality.jpg"
+    },
+    {
+        "title": "Sci-Fi & Fantasy",
+        "sobre": "Ciência, tecnologia e mundos fantásticos.",
+        "poster": "https://exemplo.com/scifi_fantasy.jpg"
+    },
+    {
+        "title": "Ficção científica",
+        "sobre": "Histórias futurísticas e avanços tecnológicos impressionantes.",
+        "poster": "https://exemplo.com/ficcao.jpg"
+    },
+    {
+        "title": "Cinema Tv",
+        "sobre": "Filmes exibidos diretamente na televisão.",
+        "poster": "https://exemplo.com/cinema_tv.jpg"
+    },
+    {
+        "title": "Talk",
+        "sobre": "Entrevistas e bate-papos com personalidades.",
+        "poster": "https://exemplo.com/talk.jpg"
+    },
+    {
+        "title": "Thriller",
+        "sobre": "Suspense, tensão e reviravoltas inesperadas.",
+        "poster": "https://exemplo.com/thriller.jpg"
+    },
+    {
+        "title": "Guerra",
+        "sobre": "Filmes e séries sobre conflitos militares.",
+        "poster": "https://exemplo.com/guerra.jpg"
+    },
+    {
+        "title": "War & Politics",
+        "sobre": "Produções sobre política e guerras históricas.",
+        "poster": "https://exemplo.com/war_politics.jpg"
+    },
+    {
+        "title": "Faroeste",
+        "sobre": "Clássicos do Velho Oeste, com cowboys e duelos.",
+        "poster": "https://exemplo.com/faroeste.jpg"
+    }
+]
