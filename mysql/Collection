@@ -1,1 +1,50 @@
-t
+[
+  {
+    "title": "As Crônicas de Nárnia",
+    "sobre": "O mal reinou por 100 anos...",
+    "poster": "4F2MzH4TGceQw97YR2JP5BFlhja.png",
+    "banner": "AuV99eQivVWuk2AOSM6hYh9QRPQ.jpg"
+  },
+  {
+    "title": "Star Wars",
+    "sobre": "Toda geração tem uma lenda.",
+    "poster": "nb6bG9x0GiQGVKiM1sOJp5CtasW.png",
+    "banner": "1KqqS519pchjqaRRgdRdquT71zt.jpg"
+  },
+  {
+    "title": "Harry Potter",
+    "sobre": "Algo maléfico vem nesta direção.",
+    "poster": "qGcE0dUgmBdsT0IJCWLjpjo7tmx.png",
+    "banner": "7v88JhkMjWSgs56z20EnEBciLcp.jpg"
+  },
+  {
+    "title": "Velozes e Furiosos",
+    "sobre": "Viva a vida 400 metros de cada vez.",
+    "poster": "xgZj7S2rwDamoQbgvkB9HGAuQ6x.png",
+    "banner": "48UNZSGGViU1m9DcfpKZKMxBaI7.jpg"
+  },
+  {
+    "title": "The Walking Dead",
+    "sobre": "Enfrente os mortos. Tema os vivos.",
+    "poster": "2OfmjscO6GL1nFbGr43H90lhUax.png",
+    "banner": "xVzvD5BPAU4HpleFSo8QOdHkndo.jpg"
+  },
+  {
+    "title": "A Saga Crepúsculo",
+    "sobre": "Para sempre é apenas o começo.",
+    "poster": "arHrAT6Xyh75E4Wkh1kv4ejzK8E.png",
+    "banner": "x6sx9440WAfvsesFMFLUOrppP3S.jpg"
+  },
+  {
+    "title": "Jogos Vorazes",
+    "sobre": "O mundo estará assistindo.",
+    "poster": "28IgVztvlvzVAhLwcmBC5pydYwJ.png",
+    "banner": "3kz6mLESBmdxAJwoHMS5YYfoWLE.jpg"
+  },
+  {
+    "title": "O Senhor dos Anéis",
+    "sobre": "A Terra Média ganha vida.",
+    "poster": "pibWEnyGCGVjCJ16YU0UhUPj935.png",
+    "banner": "oiwc338EoBgS4sEI2ixAny4KQKg.jpg"
+  }
+]
