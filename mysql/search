@@ -1,14 +1,4 @@
 [
-  {
-    "urls": "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dseries"
-  },
-  {
-    "urls": ""
-  },
-  {
-    "urls": ""
-  },
-  {
-    "urls": "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dmovie"
-  }
+    "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dmovie",
+    "https://raw.githubusercontent.com/mixcine/wp-json/refs/heads/main/mysql/get.php%3Dseries"
 ]
