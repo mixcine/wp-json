@@ -138,10 +138,5 @@
         "title": "Faroeste",
         "sobre": "Clássicos do Velho Oeste, com cowboys e duelos.",
         "poster": "https://exemplo.com/faroeste.jpg"
-    },
-    {
-        "title": "Você chegou ao final",
-        "sobre": "Fim da lista",
-        "poster": "Fim da lista"
     }
 ]
