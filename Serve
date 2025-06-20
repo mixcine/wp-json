@@ -1,0 +1,66 @@
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+const rooms = {}; // { roomId: [player1, player2] }
+
+wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.action === "create") {
+        const roomId = generateRoomId();
+        rooms[roomId] = [ws];
+        ws.roomId = roomId;
+        ws.send(JSON.stringify({ type: "room_created", roomId }));
+      }
+
+      if (data.action === "join") {
+        const roomId = data.roomId;
+        if (rooms[roomId] && rooms[roomId].length === 1) {
+          rooms[roomId].push(ws);
+          ws.roomId = roomId;
+          rooms[roomId].forEach(client =>
+            client.send(JSON.stringify({ type: "start_game", roomId }))
+          );
+        } else {
+          ws.send(JSON.stringify({ type: "error", message: "Sala inválida ou cheia" }));
+        }
+      }
+
+      if (data.action === "move") {
+        const room = rooms[ws.roomId];
+        if (room) {
+          room.forEach(client => {
+            if (client !== ws) {
+              client.send(JSON.stringify({ type: "move", data: data.data }));
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao processar mensagem:", e);
+    }
+  });
+
+  ws.on("close", () => {
+    if (ws.roomId && rooms[ws.roomId]) {
+      rooms[ws.roomId] = rooms[ws.roomId].filter(client => client !== ws);
+      if (rooms[ws.roomId].length === 0) delete rooms[ws.roomId];
+    }
+  });
+});
+
+function generateRoomId() {
+  return Math.random().toString(36).substr(2, 6);
+}
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Servidor WebSocket escutando na porta " + PORT);
+});
