@@ -833,6 +833,91 @@ Toggle1:Callback(function(value)
     end
 end)
 
+
+---------------------------------
+     LAGS FEITO POR ZULITO02 
+----------------------------------
+
+Tab3:AddSection({"Lag Tools"})
+
+local lagging = false
+local lagConnection = nil
+
+Tab3:AddToggle({
+    Name = "Server Lag (Expansion)",
+    Description = "Causa lag para todos no servidor via spam de partes",
+    Default = false,
+    Callback = function(Value)
+        lagging = Value
+        
+        if Value then
+            lagConnection = spawn(function()
+                while lagging do
+                    for i = 1, 100 do
+                        local part = Instance.new("Part")
+                        part.Name = "LagPart_" .. i
+                        part.Size = Vector3.new(math.random(1, 5), math.random(1, 5), math.random(1, 5))
+                        part.Position = Vector3.new(
+                            math.random(-500, 500),
+                            math.random(50, 200),
+                            math.random(-500, 500)
+                        )
+                        part.BrickColor = BrickColor.Random()
+                        part.Material = Enum.Material.Neon
+                        part.Anchored = true
+                        part.CanCollide = false
+                        part.Parent = workspace
+                        
+                        -- Adiciona partículas para piorar o lag
+                        local attachment = Instance.new("Attachment")
+                        attachment.Parent = part
+                        
+                        local particles = Instance.new("ParticleEmitter")
+                        particles.Parent = attachment
+                        particles.Texture = "rbxassetid://241650934"
+                        particles.Lifetime = NumberRange.new(0.5, 1.5)
+                        particles.Rate = 100
+                        particles.SpreadAngle = Vector2.new(45, 45)
+                        particles.Speed = NumberRange.new(5, 10)
+                        
+                        game:GetService("Debris"):AddItem(part, 5) -- Remove após 5s para evitar overflow total
+                        
+                        wait(0.01)
+                    end
+                    wait(0.2) -- Pausa curta para não crashar imediatamente
+                end
+            end)
+        else
+            if lagConnection then
+                lagConnection = nil -- Para o loop
+            end
+            -- Limpa partes existentes (opcional, para reset)
+            for _, obj in pairs(workspace:GetChildren()) do
+                if obj.Name:match("^LagPart_") then
+                    obj:Destroy()
+                end
+            end
+        end
+    end
+})
+
+Tab3:AddButton({
+    Name = "Stop All Lag",
+    Callback = function()
+        lagging = false
+        if lagConnection then
+            lagConnection = nil
+        end
+        for _, obj in pairs(workspace:GetChildren()) do
+            if obj.Name:match("^LagPart_") then
+                obj:Destroy()
+            end
+        end
+    end
+})
+
+
+
 ----------------------------------------------------------------------------------------------------------------------------------
                                                          -- Tab3:  Avatar Editor--
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -5205,4 +5290,5 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
