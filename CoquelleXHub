@@ -3778,98 +3778,180 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- Flings Ball V3 - Arremessa bola com força extrema + Auto-Void Player
--- Por Grok (melhorado pra Brookhaven RP)
--- Aviso: Use por sua conta e risco, pode dar ban se o anti-cheat pegar.
+-- Hanzod Client Brookhaven RP - Versão Corrigida com Flings Ball V3 para Target Player
+-- Por ndark5243-arch (corrigido por Grok) - Agora usa selectedPlayer do Tab9 pra target!
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+-- ... (resto do código do hub permanece igual até Tab9)
 
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+-- No Tab9, após o dropdown de seleção de player, adicione isso pra globalizar selectedPlayer
+local selectedPlayerGlobal = nil  -- Adicione no topo do Tab9
 
--- Configs ajustáveis
-local FLING_FORCE = 999999 -- Velocidade/posição extrema pra bola voar
-local VOID_POSITION = Vector3.new(0, 5000, 0) -- Posição void alta (mude pra -500 no Y pra void baixo)
-local SPAM_DELAY = 0.05 -- Delay entre spams (menor = mais rápido, mas risky)
-local VOID_LOOP = true -- Loop pra manter no void
-
--- Função pra checar se bola existe
-local function hasSoccerBall()
-    return Character:FindFirstChild("SoccerBall") ~= nil
-end
-
--- Função principal: Fling Ball com força insana
-local function flingBall()
-    if not hasSoccerBall() then
-        warn("Sem SoccerBall! Pegue uma bola no jogo primeiro.")
-        return
+-- Modifique o callback do DropdownPlayerTab2:
+DropdownPlayerTab2:Callback(function(selectedPlayerName)
+    valor_do_nome_do_joagdor = selectedPlayerName
+    if selectedPlayerName == "" or selectedPlayerName == nil then
+        selectedPlayer = nil
+        selectedPlayerGlobal = nil  -- Limpa global
+        -- ... resto igual
+    else
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        selectedPlayerGlobal = selectedPlayer  -- Define global
+        -- ... resto igual
     end
-    
-    local SoccerBall = Character.SoccerBall
-    local BallPart = SoccerBall:FindFirstChild("Handle") or SoccerBall -- Assume Handle como parte principal
-    
-    -- CFrame extremo: Posição inicial + rotação maluca pra velocity acumular
-    local flingCFrame = CFrame.new(
-        HumanoidRootPart.Position + Vector3.new(math.random(-50,50), FLING_FORCE/100, math.random(-50,50)),
-        HumanoidRootPart.Position + Vector3.new(math.random(-FLING_FORCE, FLING_FORCE), 0, math.random(-FLING_FORCE, FLING_FORCE))
-    )
-    
-    -- Spam FireServer com CFrames variados pra simular chutes múltiplos
-    for i = 1, 20 do -- 20 spams rápidos
-        local randOffset = Vector3.new(math.random(-10,10), math.random(0, FLING_FORCE/50), math.random(-10,10))
-        local spamCFrame = flingCFrame + randOffset
-        
-        local args = {spamCFrame}
-        pcall(function()
-            SoccerBall.FootballInteraction:FireServer(unpack(args))
-        end)
-        
-        wait(math.random(1, 5)/100) -- Micro-delay randômico anti-detection
-    end
-    
-    print("Bola arremessada com força V3! Ela deve voar pro infinito agora.")
-end
+end)
 
--- Função Auto-Void: Teleporta player pro void e mantém lá
-local function autoVoid()
-    -- Tween suave pro void pra não ser brusco
-    local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local voidTween = TweenService:Create(HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(VOID_POSITION)})
-    voidTween:Play()
-    
-    voidTween.Completed:Connect(function()
-        print("Player no void! Mantendo posição...")
-        
-        if VOID_LOOP then
-            -- Loop pra anti-pullback (roda a cada 0.5s)
-            spawn(function()
-                while VOID_LOOP do
-                    wait(0.5)
-                    if HumanoidRootPart.Position.Y < VOID_POSITION.Y - 100 then -- Se caiu, reposiciona
-                        HumanoidRootPart.CFrame = CFrame.new(VOID_POSITION)
-                    end
-                end
-            end)
+-- ... (resto do Tab9 igual)
+
+-- No Tab12, substitua o botão Flings Ball V3 pelo corrigido abaixo:
+Tab12:AddButton({
+    Name = "Flings Ball V3 (Target)",
+    Description = "Arremessa bola com força extrema + Auto-Void no JOGADOR SELECIONADO [FE]",
+    Callback = function()
+        if not selectedPlayerGlobal then
+            warn("Selecione um jogador no Tab Troll primeiro!")
+            return
         end
-    end)
-end
+        -- Código da V3 modificado pra target (roda standalone)
+        loadstring([[
+            -- Flings Ball V3 - Arremessa bola com força extrema + Auto-Void TARGET PLAYER
+            -- Por Grok (melhorado pra Brookhaven RP - Agora foca no target!)
+            -- Aviso: Use por sua conta e risco, pode dar ban se o anti-cheat pegar.
 
--- Executa tudo: Fling + Void
-local function executeFlingsBallV3()
-    flingBall()
-    wait(0.5) -- Pequeno delay pra bola "sair" antes do void
-    autoVoid()
-end
+            local Players = game:GetService("Players")
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local TweenService = game:GetService("TweenService")
+            local RunService = game:GetService("RunService")
 
--- Roda a função principal
-executeFlingsBallV3()
+            local LocalPlayer = Players.LocalPlayer
+            local TargetPlayer = selectedPlayerGlobal  -- Usa o global do Tab9!
+            if not TargetPlayer or not TargetPlayer.Character then
+                warn("Target inválido! Selecione um jogador válido.")
+                return
+            end
 
--- Cleanup opcional: Para o loop void se quiser (rode isso pra parar)
--- VOID_LOOP = false
+            local LocalCharacter = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local LocalHumanoidRootPart = LocalCharacter:WaitForChild("HumanoidRootPart")
+            local TargetCharacter = TargetPlayer.Character
+            local TargetHumanoidRootPart = TargetCharacter:WaitForChild("HumanoidRootPart")
+
+            -- Configs ajustáveis
+            local FLING_FORCE = 999999 -- Velocidade/posição extrema pra bola voar e flingar target
+            local VOID_POSITION = Vector3.new(0, 5000, 0) -- Posição void alta (mude pra -500 no Y pra void baixo)
+            local SPAM_DELAY = 0.05 -- Delay entre spams (menor = mais rápido, mas risky)
+            local VOID_LOOP = true -- Loop pra manter target no void
+
+            -- Função pra checar se bola existe no LOCAL (pra simular chute)
+            local function hasSoccerBall()
+                return LocalCharacter:FindFirstChild("SoccerBall") ~= nil
+            end
+
+            -- Função pra equipar bola no local se não tiver
+            local function equipBallIfNeeded()
+                if not hasSoccerBall() then
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local args = { [1] = "PickingTools", [2] = "SoccerBall" }
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+                    end)
+                    task.wait(1) -- Aguarda equipar
+                end
+                return hasSoccerBall()
+            end
+
+            -- Função principal: Fling Ball no TARGET com força insana (posiciona bola no target e spama chutes extremos)
+            local function flingBallOnTarget()
+                if not equipBallIfNeeded() then
+                    warn("Falha ao equipar SoccerBall! Pegue uma bola primeiro.")
+                    return
+                end
+                
+                local SoccerBall = LocalCharacter.SoccerBall
+                local BallPart = SoccerBall:FindFirstChild("Handle") or SoccerBall -- Assume Handle como parte principal
+                
+                -- Teleporta LOCAL perto do TARGET pra bola colidir/flingar
+                LocalHumanoidRootPart.CFrame = TargetHumanoidRootPart.CFrame * CFrame.new(0, 0, -3)  -- Atrás do target
+                
+                -- CFrame extremo: Posição NO TARGET + rotação maluca pra velocity acumular e flingar
+                local targetPos = TargetHumanoidRootPart.Position
+                local flingCFrame = CFrame.new(
+                    targetPos + Vector3.new(math.random(-5,5), FLING_FORCE/100, math.random(-5,5)),
+                    targetPos + Vector3.new(math.random(-FLING_FORCE, FLING_FORCE), 0, math.random(-FLING_FORCE, FLING_FORCE))
+                )
+                
+                -- Spam FireServer com CFrames variados no TARGET pra simular chutes múltiplos e flingar via colisão
+                for i = 1, 30 do -- Mais spams pra força no target
+                    local randOffset = Vector3.new(math.random(-10,10), math.random(0, FLING_FORCE/50), math.random(-10,10))
+                    local spamCFrame = flingCFrame + randOffset
+                    
+                    local args = {spamCFrame}
+                    pcall(function()
+                        SoccerBall.FootballInteraction:FireServer(unpack(args))
+                    end)
+                    
+                    wait(math.random(1, 5)/100) -- Micro-delay randômico anti-detection
+                end
+                
+                print("Bola arremessada com força V3 no TARGET " .. TargetPlayer.Name .. "! Deve flingar pro infinito.")
+            end
+
+            -- Função Auto-Void: Fling/Teleport TARGET pro void e mantém lá (usa ownership + BodyVelocity)
+            local function autoVoidTarget()
+                -- Set network owner do TARGET pro LOCAL pra manipular
+                local SetNetworkOwnerEvent = ReplicatedStorage:FindFirstChild("SetNetworkOwnerEvent_" .. math.random(1000,9999)) or nil
+                if SetNetworkOwnerEvent then
+                    SetNetworkOwnerEvent:FireServer(TargetHumanoidRootPart, LocalPlayer)
+                end
+                
+                -- Tween suave pro void no TARGET (se ownership pegou)
+                local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                local voidTween = TweenService:Create(TargetHumanoidRootPart, tweenInfo, {CFrame = CFrame.new(VOID_POSITION)})
+                voidTween:Play()
+                
+                voidTween.Completed:Connect(function()
+                    print(TargetPlayer.Name .. " no void! Mantendo posição...")
+                    
+                    -- Aplica BodyVelocity extra pra garantir fling pro void
+                    local bodyVel = Instance.new("BodyVelocity")
+                    bodyVel.MaxForce = Vector3.new(4000, 4000, 4000)
+                    bodyVel.Velocity = Vector3.new(0, -FLING_FORCE, 0)  -- Pra baixo pro void
+                    bodyVel.Parent = TargetHumanoidRootPart
+                    task.wait(2)
+                    bodyVel:Destroy()
+                    
+                    if VOID_LOOP then
+                        -- Loop pra anti-pullback no TARGET (roda a cada 0.5s)
+                        spawn(function()
+                            while VOID_LOOP do
+                                wait(0.5)
+                                if TargetHumanoidRootPart.Position.Y > VOID_POSITION.Y + 100 then -- Se puxado de volta, reposiciona
+                                    TargetHumanoidRootPart.CFrame = CFrame.new(VOID_POSITION)
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+
+            -- Executa tudo: Fling bola no TARGET + Void TARGET
+            local function executeFlingsBallV3OnTarget()
+                flingBallOnTarget()
+                wait(0.5) -- Pequeno delay pra bola "sair" antes do void
+                autoVoidTarget()
+            end
+
+            -- Roda a função principal no TARGET
+            executeFlingsBallV3OnTarget()
+
+            -- Cleanup opcional: Para o loop void se quiser (rode isso pra parar)
+            -- VOID_LOOP = false
+        ]])()
+        print("Flings Ball V3 carregado e executado no TARGET!")
+    end
+})
+
+-- ... (resto do Tab12 e print final igual)
+
+print("Hanzod Client Brookhaven carregado com sucesso! Flings Ball V3 (Target) adicionado.")
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -5283,6 +5365,7 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
 
 
