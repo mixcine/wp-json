@@ -2848,4 +2848,5 @@ ProtectionTab:AddToggle({
 })
 
 -- Notificação inicial
+
 ShowNotification("Lynix Hub", "Script carregado com sucesso! Versão 4.0", "rbxassetid://92938877761950")
