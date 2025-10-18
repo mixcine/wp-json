@@ -3773,6 +3773,291 @@ end
 
 
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+                                                   --fling Ball V3 experimental--
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-- === FLING BALL V3 - APRIMORADA PARA VOID ===
+-- Adicione isso após as variáveis da Tab9 (ex.: excludedPlayers)
+
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+local LocalPlayer = Players.LocalPlayer
+local flingV3Active = false
+local flingV3Connections = {}
+local voidPosition = Vector3.new(0, -1000, 0)  -- Posição do void para verificação
+
+-- Função auxiliar para notificação
+local function notifyV3(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 3
+    })
+end
+
+-- Função aprimorada para equipar bola (com retry)
+local function equipBolaV3()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local bola = backpack:FindFirstChild("SoccerBall") or LocalPlayer.Character:FindFirstChild("SoccerBall")
+    if not bola then
+        local args = { [1] = "PickingTools", [2] = "SoccerBall" }
+        local success = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+        end)
+        if not success then 
+            notifyV3("Erro V3", "Falha ao equipar bola!")
+            return false 
+        end
+        -- Retry loop melhorado
+        for i = 1, 10 do
+            task.wait(0.1)
+            bola = backpack:FindFirstChild("SoccerBall")
+            if bola then break end
+        end
+        if not bola then return false end
+    end
+    if bola.Parent ~= LocalPlayer.Character then
+        bola.Parent = LocalPlayer.Character
+    end
+    return true
+end
+
+-- Função principal: Fling Ball V3 (single ou ALL)
+function flingWithBallV3(targetPlayer, isAllMode)
+    if flingV3Active then 
+        notifyV3("V3 Já Ativo", "Fling V3 já está rodando!")
+        return 
+    end
+    
+    if not equipBolaV3() then return end
+    task.wait(0.3)  -- Delay para spawn
+    
+    -- Deletar tool e pegar a bola do workspace
+    local args = { [1] = "PlayerWantsToDeleteTool", [2] = "SoccerBall" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+    end)
+    
+    local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
+    if not workspaceCom then return end
+    local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
+    if not soccerBalls then return end
+    
+    local soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+    if not soccerBall then 
+        notifyV3("Erro V3", "Bola não encontrada no workspace!")
+        return 
+    end
+    
+    -- Salvar propriedades originais
+    local originalProperties = {
+        Anchored = soccerBall.Anchored,
+        CanCollide = soccerBall.CanCollide,
+        CanTouch = soccerBall.CanTouch
+    }
+    soccerBall.Anchored = false
+    soccerBall.CanCollide = true
+    soccerBall.CanTouch = true
+    pcall(function() soccerBall:SetNetworkOwner(nil) end)
+    
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then return end
+    
+    -- Configurações anti-collide para o player
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then part.CanCollide = false end
+    end
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    humanoid.Sit = false
+    
+    -- Desabilitar seats globais
+    for _, seat in ipairs(Workspace:GetDescendants()) do
+        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then seat.Disabled = true end
+    end
+    
+    -- Reduzir tamanho do character para precisão
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 3)
+    end)
+    
+    flingV3Active = true
+    local lastFlingTime = 0
+    local flingCount = {}  -- Para ALL mode: contagem por player
+    
+    -- Loop principal de tracking e offset (aprimorado com raycast)
+    local trackConn = RunService.Heartbeat:Connect(function()
+        if not flingV3Active then return end
+        
+        local targets = {}
+        if isAllMode then
+            -- ALL mode: filtrar players válidos (sem whitelist)
+            for _, plr in ipairs(Players:GetPlayers()) do
+                local isExcluded = false
+                for _, excluded in ipairs(excludedPlayers) do
+                    if plr == excluded then isExcluded = true break end
+                end
+                if plr ~= LocalPlayer and not isExcluded and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                    table.insert(targets, plr)
+                end
+            end
+        else
+            targets = {targetPlayer}
+        end
+        
+        for _, target in ipairs(targets) do
+            if not target or not target.Character then continue end
+            local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
+            local targetHum = target.Character:FindFirstChild("Humanoid")
+            if not targetHRP or not targetHum then continue end
+            
+            -- Raycast para prever movimento (aprimoramento: evita escapes)
+            local rayOrigin = targetHRP.Position
+            local rayDirection = targetHum.MoveDirection * 10 + Vector3.new(0, 0, 0)  -- Previsão simples
+            local rayParams = RaycastParams.new()
+            rayParams.FilterDescendantsInstances = {target.Character}
+            local rayResult = Workspace:Raycast(rayOrigin, rayDirection, rayParams)
+            local predictedPos = rayResult and rayResult.Position or (targetHRP.Position + rayDirection)
+            
+            -- Offset dinâmico baseado em velocidade e movimento
+            local speed = targetHRP.Velocity.Magnitude
+            local isJumping = targetHum:GetState() == Enum.HumanoidStateType.Jumping
+            local isMoving = targetHum.MoveDirection.Magnitude > 0.05
+            local baseOffset = Vector3.new(math.cos(tick() * 30) * 2, 1, math.sin(tick() * 30) * 2)  -- Ondulação suave
+            if isMoving or isJumping then
+                local extra = math.clamp(speed / 2, 4, 10)  -- Mais agressivo
+                baseOffset = baseOffset + (targetHRP.CFrame.LookVector * extra)
+            end
+            
+            -- Posição final da bola (previsão + offset)
+            local ballPos = predictedPos + baseOffset
+            soccerBall.CFrame = CFrame.new(ballPos)
+            soccerBall.AssemblyLinearVelocity = Vector3.new(9999 + math.random(-100, 100), 9999 + math.random(-100, 100), 9999 + math.random(-100, 100))  -- Variação anti-detect
+    
+            -- Verificar distância para fling
+            local dist = (soccerBall.Position - targetHRP.Position).Magnitude
+            if dist < 4 and tick() - lastFlingTime > 0.2 then  -- Mais frequente
+                lastFlingTime = tick()
+                flingCount[target] = (flingCount[target] or 0) + 1
+                
+                -- Fling principal: força massiva pro void
+                for _, part in ipairs(target.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+                
+                local flingForce = 1500000 + (speed * 50000)  -- Dinâmico: mais rápido = mais força
+                local flingVel = (Vector3.new(math.random(-10, 10), -50, math.random(-10, 10)).Unit * flingForce) + voidPosition.Unit * 1000000  -- Direto pro void
+                local fling = Instance.new("BodyVelocity")
+                fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                fling.Velocity = flingVel
+                fling.Parent = targetHRP
+                
+                -- Spin adicional para knockback (aprimoramento V3)
+                local spin = Instance.new("BodyAngularVelocity")
+                spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                spin.AngularVelocity = Vector3.new(math.random(50, 100), math.random(50, 100), math.random(50, 100))  -- Rotação louca
+                spin.Parent = targetHRP
+                
+                task.delay(0.4, function()
+                    if fling then fling:Destroy() end
+                    if spin then spin:Destroy() end
+                    for _, part in ipairs(target.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then part.CanCollide = true end
+                    end
+                end)
+                
+                -- Verificação de void (se Y < -500, sucesso)
+                task.delay(1, function()
+                    if targetHRP.Position.Y < -500 then
+                        notifyV3("V3 Sucesso", target.Name .. " jogado no void!")
+                    elseif flingCount[target] > 3 then  -- Loop max 3 flings
+                        -- Fling final ultra-forte
+                        local finalFling = Instance.new("BodyPosition")
+                        finalFling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        finalFling.Position = voidPosition
+                        finalFling.Parent = targetHRP
+                        task.delay(2, function() if finalFling then finalFling:Destroy() end end)
+                    end
+                end)
+            end
+        end
+    end)
+    
+    -- Conexão para check de fim
+    table.insert(flingV3Connections, trackConn)
+    
+    notifyV3("V3 Ativado", (isAllMode and "ALL Mode" or "Single: " .. (targetPlayer and targetPlayer.Name or "N/A")))
+    
+    -- Auto-stop após 15s ou se inativo
+    task.delay(15, function()
+        if flingV3Active then
+            stopFlingV3(soccerBall, originalProperties, character, humanoid)
+        end
+    end)
+end
+
+-- Função para parar V3 (limpeza aprimorada)
+function stopFlingV3(soccerBall, originalProperties, character, humanoid)
+    flingV3Active = false
+    for _, conn in ipairs(flingV3Connections) do
+        if conn then conn:Disconnect() end
+    end
+    flingV3Connections = {}
+    
+    if soccerBall and originalProperties then
+        soccerBall.Anchored = originalProperties.Anchored
+        soccerBall.CanCollide = originalProperties.CanCollide
+        soccerBall.CanTouch = originalProperties.CanTouch
+    end
+    
+    if character then
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = true end
+        end
+    end
+    if humanoid then humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true) end
+    
+    -- Reabilitar seats e tamanho
+    for _, seat in ipairs(Workspace:GetDescendants()) do
+        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then seat.Disabled = false end
+    end
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+    end)
+    
+    notifyV3("V3 Parado", "Fling Ball V3 desativado!")
+end
+
+-- === INTEGRAÇÃO NA TAB9 ===
+-- Substitua ou adicione nos botões existentes da Tab9
+
+-- Exemplo para Single Target (no toggle de Fling, se método == "Bola V3")
+-- No callback do toggle:
+-- if selectedFlingMethod == "Bola V3" then
+--     flingWithBallV3(selectedPlayer, false)
+-- end
+
+-- Para ALL Mode (adicione um novo botão na seção "fling ALL")
+Tab9:AddButton({
+    Name = "Fling Bola ALL V3 (Void Killer)",
+    Description = "Fling aprimorado em todos (com whitelist)",
+    Callback = function()
+        flingWithBallV3(nil, true)  -- nil para ALL
+    end
+})
+
+-- Para parar (adicione ou integre no botão "Parar Tudo")
+-- No callback do "Parar Tudo", adicione:
+-- stopFlingV3(soccerBall, originalProperties, LocalPlayer.Character, LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
                                                    --fling com ônibus--
@@ -5185,4 +5470,5 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
