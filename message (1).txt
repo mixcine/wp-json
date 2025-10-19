@@ -1974,43 +1974,94 @@ end
 
 ------------novo teste experimental--------------
 
+
 ---------------------------------------------------------------------------------------------------------------------------------
--- === Nova Seção: Troll Avançado (Não Visual) === --
+-- === Troll Avançado (Não Visual) - Com Captures Integrados === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
 local Section = Tab9:AddSection({"Troll Avançado (Não Visual)"})
 
--- Nova função: Freeze (Congelar) - Impede movimento do jogador selecionado sem visuals
+-- Função auxiliar pra ownership (com seus captures + nativo)
+local function takeOwnership(part, targetPlayer)
+    if not part or not targetPlayer then return end
+    
+    -- Nativo do executor (prioridade, mais server-side)
+    if setnetworkowner then
+        pcall(setnetworkowner, part, LocalPlayer)
+    end
+    
+    -- Fallback: Seu remote custom (spam 3x pra força)
+    local remoteName = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))  -- Random como no seu
+    local remote = ReplicatedStorage:FindFirstChild(remoteName) or Instance.new("RemoteEvent")
+    remote.Name = remoteName
+    remote.Parent = ReplicatedStorage
+    
+    for i = 1, 3 do  -- Spam 3x como você capturou
+        pcall(function()
+            remote:FireServer(part, LocalPlayer)  -- Ou targetPlayer se for pro outro
+        end)
+        task.wait(0.05)  -- Delay pequeno pra evitar flood
+    end
+end
+
+-- Equip Bola (com seus captures: delete + pick)
+local function equipBola()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local bola = backpack:FindFirstChild("SoccerBall") or LocalPlayer.Character:FindFirstChild("SoccerBall")
+    if not bola then
+        -- Seu capture: Delete primeiro (limpa)
+        local deleteArgs = { "PlayerWantsToDeleteTool", "SoccerBall" }
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(deleteArgs))
+        end)
+        task.wait(0.1)
+        
+        -- Seu capture: Pick up
+        local pickArgs = { "PickingTools", "SoccerBall" }
+        local success = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(pickArgs))
+        end)
+        if not success then return false end
+        
+        repeat
+            bola = backpack:FindFirstChild("SoccerBall")
+            task.wait()
+        until bola or task.wait(5)
+        if not bola then return false end
+    end
+    if bola.Parent ~= LocalPlayer.Character then
+        bola.Parent = LocalPlayer.Character
+    end
+    return true
+end
+
+-- Freeze (Congelar) - Ownership + Anchor/Velocity=0
 local freezeEnabled = false
 local freezeConnection = nil
 
 local function toggleFreeze(state)
-    if not selectedPlayer or not selectedPlayer.Character then
-        return false
-    end
+    if not selectedPlayer or not selectedPlayer.Character then return false end
 
     local targetCharacter = selectedPlayer.Character
     local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
     local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
 
-    if not targetHRP or not targetHumanoid then
-        return false
-    end
+    if not targetHRP or not targetHumanoid then return false end
+
+    takeOwnership(targetHRP, selectedPlayer)
 
     if state then
-        -- Congela o jogador: Remove movimento e aplica âncora temporária
         targetHumanoid.PlatformStand = true
         targetHRP.Anchored = true
         targetHRP.Velocity = Vector3.zero
         targetHRP.RotVelocity = Vector3.zero
 
-        -- Loop para manter o freeze (atualiza a cada frame)
         freezeConnection = RunService.Heartbeat:Connect(function()
             if not freezeEnabled or not targetHRP.Parent then
-                freezeConnection:Disconnect()
-                freezeConnection = nil
+                if freezeConnection then freezeConnection:Disconnect() end
                 return
             end
+            takeOwnership(targetHRP, selectedPlayer)  -- Re-take
             targetHumanoid.PlatformStand = true
             targetHRP.Anchored = true
             targetHRP.Velocity = Vector3.zero
@@ -2019,11 +2070,7 @@ local function toggleFreeze(state)
 
         return true
     else
-        -- Descongela
-        if freezeConnection then
-            freezeConnection:Disconnect()
-            freezeConnection = nil
-        end
+        if freezeConnection then freezeConnection:Disconnect() end
         targetHumanoid.PlatformStand = false
         targetHRP.Anchored = false
         return true
@@ -2032,148 +2079,138 @@ end
 
 Tab9:AddToggle({
     Name = "Congelar Jogador",
-    Description = "Congela o movimento do jogador selecionado (baseado em kill, mas sem fling)",
+    Description = "Congela movimento (non-visual, com ownership spam)",
     Default = false,
     Callback = function(state)
         freezeEnabled = state
-        if not toggleFreeze(state) then
-            -- Se falhar, desliga o toggle
-            freezeEnabled = false
-            -- Aqui você pode adicionar uma notificação se quiser, mas mantendo não-visual
-        end
+        if not toggleFreeze(state) then freezeEnabled = false end
     end
 })
 
--- Nova função: Spam Reset - Força reset contínuo no jogador (sem visuals, puro exploit de rede)
+-- Spam Reset - Ownership + Void CFrame
 local spamResetEnabled = false
 local spamResetConnection = nil
 
 local function toggleSpamReset(state)
-    if not selectedPlayer then
-        return false
-    end
+    if not selectedPlayer then return false end
 
     if state then
         spamResetEnabled = true
         spamResetConnection = RunService.Heartbeat:Connect(function()
             if not spamResetEnabled then
-                spamResetConnection:Disconnect()
-                spamResetConnection = nil
+                if spamResetConnection then spamResetConnection:Disconnect() end
                 return
             end
 
-            -- Usa remote para forçar load character (reset) no target
-            -- Baseado em mecânica de kill: simula respawn forçado via network
-            pcall(function()
-                SetNetworkOwnerEvent:FireServer(selectedPlayer.Character:FindFirstChild("HumanoidRootPart"), LocalPlayer)
-                if selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    selectedPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, -500, 0) -- Void para reset
-                end
-            end)
+            local targetHRP = selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not targetHRP then return end
+
+            takeOwnership(targetHRP, selectedPlayer)
+            targetHRP.CFrame = CFrame.new(0, -500, 0)  -- Void reset
         end)
         return true
     else
         spamResetEnabled = false
-        if spamResetConnection then
-            spamResetConnection:Disconnect()
-            spamResetConnection = nil
-        end
+        if spamResetConnection then spamResetConnection:Disconnect() end
         return true
     end
 end
 
 Tab9:AddToggle({
     Name = "Spam Reset",
-    Description = "Força resets contínuos no jogador selecionado (sem visuals, loop de void)",
+    Description = "Reset loop no void (non-visual, com ownership)",
     Default = false,
     Callback = function(state)
         spamResetEnabled = state
-        if not toggleSpamReset(state) then
-            spamResetEnabled = false
-        end
+        if not toggleSpamReset(state) then spamResetEnabled = false end
     end
 })
 
--- Nova função: Direct Fling (Fling Direto) - Aplica velocity alta diretamente no target
+-- Fling Direto Non-Visual (part invisível + velocity, com equipBola otimizado)
 local directFlingEnabled = false
 local directFlingConnection = nil
+local invisiblePart = nil
+
+local function createInvisiblePart()
+    invisiblePart = Instance.new("Part")
+    invisiblePart.Name = "InvisibleFlingPart_" .. LocalPlayer.Name
+    invisiblePart.Size = Vector3.new(6, 6, 6)  -- Maior pra colidir melhor
+    invisiblePart.Transparency = 1  -- 100% invisível
+    invisiblePart.CanCollide = false
+    invisiblePart.Anchored = false
+    invisiblePart.Material = Enum.Material.ForceField
+    invisiblePart.Parent = Workspace
+    return invisiblePart
+end
 
 local function toggleDirectFling(state)
-    if not selectedPlayer or not selectedPlayer.Character then
-        return false
-    end
+    if not selectedPlayer or not selectedPlayer.Character then return false end
 
     local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
 
-    if not targetHRP then
-        return false
-    end
+    if not targetHRP then return false end
 
     if state then
-        -- Assume network owner via remote (como no kill)
-        SetNetworkOwnerEvent:FireServer(targetHRP, LocalPlayer)
+        if not equipBola() then  -- Usa sua capture pra bola invisível (mas não spawna visual)
+            task.wait(0.5)
+        end
+        invisiblePart = createInvisiblePart()
+
+        takeOwnership(targetHRP, selectedPlayer)
 
         directFlingEnabled = true
         directFlingConnection = RunService.Heartbeat:Connect(function()
-            if not directFlingEnabled or not targetHRP.Parent then
-                directFlingConnection:Disconnect()
-                directFlingConnection = nil
+            if not directFlingEnabled or not targetHRP.Parent or not invisiblePart.Parent then
+                if directFlingConnection then directFlingConnection:Disconnect() end
+                if invisiblePart then invisiblePart:Destroy() end
                 return
             end
 
-            -- Aplica fling direto com velocity random alta (sem objetos visuais)
-            local flingVelocity = Instance.new("BodyVelocity")
-            flingVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            flingVelocity.Velocity = Vector3.new(
-                math.random(-50, 50),
-                math.random(50, 100),
-                math.random(-50, 50)
-            ) * 1000
-            flingVelocity.Parent = targetHRP
+            -- Posiciona invisível part no target (sem visual)
+            local behindPos = targetHRP.Position - (targetHRP.CFrame.LookVector * 8)
+            invisiblePart.CFrame = CFrame.new(behindPos, targetHRP.Position)
 
-            -- Remove após 0.5s para loop
-            task.delay(0.5, function()
-                if flingVelocity and flingVelocity.Parent then
-                    flingVelocity:Destroy()
-                end
+            invisiblePart.CanCollide = true
+
+            -- Velocity alta pra colidir/fling (server-side physics)
+            local bv = Instance.new("BodyVelocity")
+            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bv.Velocity = (targetHRP.Position - invisiblePart.Position).Unit * 800 + Vector3.new(0, 300, 0)
+            bv.Parent = invisiblePart
+
+            task.delay(0.4, function()
+                if bv and bv.Parent then bv:Destroy() end
             end)
         end)
         return true
     else
         directFlingEnabled = false
-        if directFlingConnection then
-            directFlingConnection:Disconnect()
-            directFlingConnection = nil
-        end
+        if directFlingConnection then directFlingConnection:Disconnect() end
+        if invisiblePart then invisiblePart:Destroy() end
         return true
     end
 end
 
 Tab9:AddToggle({
-    Name = "Fling Direto",
-    Description = "Aplica fling direto no jogador (sem tools/objects, puro velocity loop)",
+    Name = "Fling Direto (Non-Visual)",
+    Description = "Fling com part invisível + velocity (usa captures de bola)",
     Default = false,
     Callback = function(state)
         directFlingEnabled = state
-        if not toggleDirectFling(state) then
-            directFlingEnabled = false
-        end
+        if not toggleDirectFling(state) then directFlingEnabled = false end
     end
 })
 
--- Botão para parar todas as novas funções (segurança)
+-- Parar tudo
 Tab9:AddButton({
     Name = "Parar Troll Avançado",
-    Description = "Desliga todas as funções não-visuais ativas",
+    Description = "Desliga todas non-visual",
     Callback = function()
         toggleFreeze(false)
         toggleSpamReset(false)
         toggleDirectFling(false)
-        -- Notificação opcional (mas mantendo não-visual, sem print)
     end
 })
-
-
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
                                                    --fling com bola--
@@ -3406,5 +3443,6 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
 
