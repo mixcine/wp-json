@@ -384,6 +384,57 @@ TrollTab:AddButton({
     end
 })
 
+---===troll sofá===---
+local function equipSofa()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local sofa = backpack:FindFirstChild("Couch") or LocalPlayer.Character:FindFirstChild("Couch")
+    if not sofa then
+        local args = { [1] = "PickingTools", [2] = "Couch" }
+        local success = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+        end)
+        if not success then return false end
+        repeat
+            sofa = backpack:FindFirstChild("Couch")
+            task.wait()
+        until sofa or task.wait(5)
+        if not sofa then return false end
+    end
+    if sofa.Parent ~= LocalPlayer.Character then
+        sofa.Parent = LocalPlayer.Character
+    end
+    return true
+end
+
+local function killWithSofa(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
+    if not equipSofa() then return end
+    isFollowingKill = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+end
+
+local function pullWithSofa(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
+    if not equipSofa() then return end
+    isFollowingPull = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+end
+
+Tab9:AddButton({
+    Name = "Matar",
+    Description = "Inicia o matar com o método selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull or running then return end
+        if not selectedPlayer or not selectedKillPullMethod then return end
+        if selectedKillPullMethod == "Sofá" then
+            killWithSofa(selectedPlayer)
+        elseif selectedKillPullMethod == "Ônibus" then
+            killWithBus(selectedPlayer)
+        end
+    end
+})
+
+---===fechamento===---
 -- Teleport button
 TrollTab:AddButton({
     Name = "Teleportar para Jogador",
