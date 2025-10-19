@@ -1978,168 +1978,66 @@ end
 -- === Troll Avançado (Não Visual) - Com Captures Integrados === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-local Section = Tab9:AddSection({"Troll Avançado (Não Visual)"})
-
--- Função auxiliar pra ownership (com seus captures + nativo)
-local function takeOwnership(part, targetPlayer)
-    if not part or not targetPlayer then return end
-    
-    -- Nativo do executor (prioridade, mais server-side)
-    if setnetworkowner then
-        pcall(setnetworkowner, part, LocalPlayer)
-    end
-    
-    -- Fallback: Seu remote custom (spam 3x pra força)
-    local remoteName = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))  -- Random como no seu
-    local remote = ReplicatedStorage:FindFirstChild(remoteName) or Instance.new("RemoteEvent")
-    remote.Name = remoteName
-    remote.Parent = ReplicatedStorage
-    
-    for i = 1, 3 do  -- Spam 3x como você capturou
-        pcall(function()
-            remote:FireServer(part, LocalPlayer)  -- Ou targetPlayer se for pro outro
-        end)
-        task.wait(0.05)  -- Delay pequeno pra evitar flood
-    end
-end
-
--- Equip Bola (com seus captures: delete + pick)
-local function equipBola()
-    local backpack = LocalPlayer:WaitForChild("Backpack")
-    local bola = backpack:FindFirstChild("SoccerBall") or LocalPlayer.Character:FindFirstChild("SoccerBall")
-    if not bola then
-        -- Seu capture: Delete primeiro (limpa)
-        local deleteArgs = { "PlayerWantsToDeleteTool", "SoccerBall" }
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(deleteArgs))
-        end)
-        task.wait(0.1)
-        
-        -- Seu capture: Pick up
-        local pickArgs = { "PickingTools", "SoccerBall" }
-        local success = pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(pickArgs))
-        end)
-        if not success then return false end
-        
-        repeat
-            bola = backpack:FindFirstChild("SoccerBall")
-            task.wait()
-        until bola or task.wait(5)
-        if not bola then return false end
-    end
-    if bola.Parent ~= LocalPlayer.Character then
-        bola.Parent = LocalPlayer.Character
-    end
-    return true
-end
-
--- Freeze (Congelar) - Ownership + Anchor/Velocity=0
-local freezeEnabled = false
-local freezeConnection = nil
-
-local function toggleFreeze(state)
-    if not selectedPlayer or not selectedPlayer.Character then return false end
-
-    local targetCharacter = selectedPlayer.Character
-    local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-
-    if not targetHRP or not targetHumanoid then return false end
-
-    takeOwnership(targetHRP, selectedPlayer)
-
-    if state then
-        targetHumanoid.PlatformStand = true
-        targetHRP.Anchored = true
-        targetHRP.Velocity = Vector3.zero
-        targetHRP.RotVelocity = Vector3.zero
-
-        freezeConnection = RunService.Heartbeat:Connect(function()
-            if not freezeEnabled or not targetHRP.Parent then
-                if freezeConnection then freezeConnection:Disconnect() end
-                return
-            end
-            takeOwnership(targetHRP, selectedPlayer)  -- Re-take
-            targetHumanoid.PlatformStand = true
-            targetHRP.Anchored = true
-            targetHRP.Velocity = Vector3.zero
-            targetHRP.RotVelocity = Vector3.zero
-        end)
-
-        return true
-    else
-        if freezeConnection then freezeConnection:Disconnect() end
-        targetHumanoid.PlatformStand = false
-        targetHRP.Anchored = false
-        return true
-    end
-end
-
-Tab9:AddToggle({
-    Name = "Congelar Jogador",
-    Description = "Congela movimento (non-visual, com ownership spam)",
-    Default = false,
-    Callback = function(state)
-        freezeEnabled = state
-        if not toggleFreeze(state) then freezeEnabled = false end
-    end
-})
-
--- Spam Reset - Ownership + Void CFrame
-local spamResetEnabled = false
-local spamResetConnection = nil
-
-local function toggleSpamReset(state)
-    if not selectedPlayer then return false end
-
-    if state then
-        spamResetEnabled = true
-        spamResetConnection = RunService.Heartbeat:Connect(function()
-            if not spamResetEnabled then
-                if spamResetConnection then spamResetConnection:Disconnect() end
-                return
-            end
-
-            local targetHRP = selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not targetHRP then return end
-
-            takeOwnership(targetHRP, selectedPlayer)
-            targetHRP.CFrame = CFrame.new(0, -500, 0)  -- Void reset
-        end)
-        return true
-    else
-        spamResetEnabled = false
-        if spamResetConnection then spamResetConnection:Disconnect() end
-        return true
-    end
-end
-
-Tab9:AddToggle({
-    Name = "Spam Reset",
-    Description = "Reset loop no void (non-visual, com ownership)",
-    Default = false,
-    Callback = function(state)
-        spamResetEnabled = state
-        if not toggleSpamReset(state) then spamResetEnabled = false end
-    end
-})
-
--- Fling Direto Non-Visual (part invisível + velocity, com equipBola otimizado)
-local directFlingEnabled = false
+-- Fling Direto Non-Visual (Corrigido Final: Usa capture de CFrame pra posicionar bola/part no void/spawn, flinga TARGET pra longe)
+local directFlingEnabled = void
 local directFlingConnection = nil
 local invisiblePart = nil
+local ballUsed = false  -- Flag pra usar SoccerBall se disponível
 
 local function createInvisiblePart()
     invisiblePart = Instance.new("Part")
     invisiblePart.Name = "InvisibleFlingPart_" .. LocalPlayer.Name
-    invisiblePart.Size = Vector3.new(6, 6, 6)  -- Maior pra colidir melhor
-    invisiblePart.Transparency = 1  -- 100% invisível
-    invisiblePart.CanCollide = false
+    invisiblePart.Size = Vector3.new(8, 8, 8)  -- Aumentado pra colisão mais ampla
+    invisiblePart.Transparency = 1  -- Invisível total
+    invisiblePart.CanCollide = false  -- Ativa só no loop
     invisiblePart.Anchored = false
     invisiblePart.Material = Enum.Material.ForceField
     invisiblePart.Parent = Workspace
+    
+    -- Anti-fling em você: Ignora touch no seu char
+    invisiblePart.Touched:Connect(function(hit)
+        if hit.Parent == LocalPlayer.Character then
+            return  -- Não afeta você
+        end
+    end)
+    
     return invisiblePart
+end
+
+local function setupBallForFling()  -- Integra seus captures: Delete + Pick + Position CFrame
+    -- Seu capture: Delete tool primeiro
+    local deleteArgs = { "PlayerWantsToDeleteTool", "SoccerBall" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(deleteArgs))
+    end)
+    task.wait(0.1)
+    
+    -- Seu capture: Pick tool
+    local pickArgs = { "PickingTools", "SoccerBall" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(pickArgs))
+    end)
+    task.wait(0.5)
+    
+    local character = LocalPlayer.Character
+    if character then
+        local soccerBall = character:FindFirstChild("SoccerBall")
+        if soccerBall then
+            -- Seu capture: Fire FootballInteraction com CFrame específico (posiciona no void/spawn pra fling forte)
+            local cframeArgs = {
+                CFrame.new(-2455.772216796875, -1278.020751953125, -5073.07568359375, 
+                          -0.22390256822109222, 3.115878044468445e-08, -0.9746115207672119, 
+                          6.253435458347667e-08, 1, 1.760411905138426e-08, 
+                          0.9746115207672119, -5.700509575490287e-08, -0.22390256822109222)
+            }
+            pcall(function()
+                soccerBall:WaitForChild("FootballInteraction"):FireServer(unpack(cframeArgs))
+            end)
+            ballUsed = true
+            return soccerBall  -- Retorna a bola pra usar como "part invisível"
+        end
+    end
+    return nil
 end
 
 local function toggleDirectFling(state)
@@ -2150,34 +2048,40 @@ local function toggleDirectFling(state)
     if not targetHRP then return false end
 
     if state then
-        if not equipBola() then  -- Usa sua capture pra bola invisível (mas não spawna visual)
-            task.wait(0.5)
-        end
-        invisiblePart = createInvisiblePart()
-
-        takeOwnership(targetHRP, selectedPlayer)
+        -- Setup bola/part (usa captures pra posicionar no CFrame void)
+        local flingObject = setupBallForFling() or createInvisiblePart()
+        
+        takeOwnership(targetHRP, selectedPlayer)  -- Ownership spam no target
 
         directFlingEnabled = true
         directFlingConnection = RunService.Heartbeat:Connect(function()
-            if not directFlingEnabled or not targetHRP.Parent or not invisiblePart.Parent then
+            if not directFlingEnabled or not targetHRP.Parent or not flingObject.Parent then
                 if directFlingConnection then directFlingConnection:Disconnect() end
+                if flingObject and flingObject ~= invisiblePart then  -- Se usou bola, deleta tool
+                    local deleteArgs = { "PlayerWantsToDeleteTool", "SoccerBall" }
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(deleteArgs))
+                    end)
+                end
                 if invisiblePart then invisiblePart:Destroy() end
                 return
             end
 
-            -- Posiciona invisível part no target (sem visual)
-            local behindPos = targetHRP.Position - (targetHRP.CFrame.LookVector * 8)
-            invisiblePart.CFrame = CFrame.new(behindPos, targetHRP.Position)
+            -- Posiciona objeto INVISÍVEL/POSICIONADO atrás do TARGET (empurra ELE pra longe)
+            local flingDir = targetHRP.CFrame.LookVector.Unit  -- Direção que o target olha
+            local behindOffset = flingDir * 12  -- Mais longe atrás dele
+            local behindPos = targetHRP.Position - behindOffset
+            flingObject.CFrame = CFrame.new(behindPos, targetHRP.Position + flingDir * 5)  -- Olha e empurra na direção dele
 
-            invisiblePart.CanCollide = true
+            flingObject.CanCollide = true  -- Ativa colisão
 
-            -- Velocity alta pra colidir/fling (server-side physics)
+            -- Velocity ALTA NA DIREÇÃO DO TARGET (flinga ELE pra frente/long, não você)
             local bv = Instance.new("BodyVelocity")
-            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            bv.Velocity = (targetHRP.Position - invisiblePart.Position).Unit * 800 + Vector3.new(0, 300, 0)
-            bv.Parent = invisiblePart
+            bv.MaxForce = Vector3.new(5000, 5000, 5000)  -- Força alta pra empurrar
+            bv.Velocity = flingDir * 1500 + Vector3.new(math.random(-200, 200), 500, math.random(-200, 200))  -- Direto + random up/sides pra fling caótico
+            bv.Parent = flingObject
 
-            task.delay(0.4, function()
+            task.delay(0.35, function()  -- Delay pra colisão
                 if bv and bv.Parent then bv:Destroy() end
             end)
         end)
@@ -2185,14 +2089,21 @@ local function toggleDirectFling(state)
     else
         directFlingEnabled = false
         if directFlingConnection then directFlingConnection:Disconnect() end
+        if ballUsed then
+            local deleteArgs = { "PlayerWantsToDeleteTool", "SoccerBall" }
+            pcall(function()
+                ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(deleteArgs))
+            end)
+        end
         if invisiblePart then invisiblePart:Destroy() end
+        ballUsed = false
         return true
     end
 end
 
 Tab9:AddToggle({
     Name = "Fling Direto (Non-Visual)",
-    Description = "Fling com part invisível + velocity (usa captures de bola)",
+    Description = "Fling TARGET pra longe (corrigido: usa CFrame void + empurra só ele)",
     Default = false,
     Callback = function(state)
         directFlingEnabled = state
@@ -2200,17 +2111,29 @@ Tab9:AddToggle({
     end
 })
 
--- Parar tudo
+-- Cleanup extra (se precisar reset size/vehicles após fling)
+local function cleanupAfterFling()
+    -- Seu capture: Reset size
+    local sizeArgs = { "CharacterSizeUp", 1 }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer(unpack(sizeArgs))
+    end)
+    -- Seu capture: Delete vehicles (se usou)
+    local vehicleArgs = { "DeleteAllVehicles" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(vehicleArgs))
+    end)
+end
+
 Tab9:AddButton({
-    Name = "Parar Troll Avançado",
-    Description = "Desliga todas non-visual",
+    Name = "Cleanup Após Fling",
+    Description = "Reseta size e deleta vehicles (de captures)",
     Callback = function()
-        toggleFreeze(false)
-        toggleSpamReset(false)
-        toggleDirectFling(false)
+        cleanupAfterFling()
     end
 })
-
+            
+    
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
                                                    --fling com bola--
@@ -2234,7 +2157,7 @@ local function equipBola()
     if bola.Parent ~= LocalPlayer.Character then
         bola.Parent = LocalPlayer.Character
     end
-    return true
+return true
 end
 
 local function flingWithBall(targetPlayer)
@@ -3443,6 +3366,7 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
 
 
