@@ -141,6 +141,18 @@ end
 
 StartLoading()
 
+-- Grab network ownership globally (essential for flinging others)
+spawn(function()
+    while true do
+        pcall(function()
+            LocalPlayer.ReplicationFocus = Workspace
+            LocalPlayer.MaximumSimulationRadius = math.huge
+            LocalPlayer.SimulationRadius = math.huge
+        end)
+        RunService.Stepped:Wait()
+    end
+end)
+
 -- Load external library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ndark5243-arch/Libraryhanzodred/refs/heads/main/Main.txt"))()
 
@@ -165,26 +177,6 @@ local selectedPlayer
 local isSpectating = false
 local spectatedPlayer
 local characterConnection
-
--- Setup network ownership event
-local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
-SetNetworkOwnerEvent.Name = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))
-SetNetworkOwnerEvent.Parent = ReplicatedStorage
-
-local serverScriptCode = [[
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local event = ReplicatedStorage:WaitForChild("]] .. SetNetworkOwnerEvent.Name .. [[")
-    event.OnServerEvent:Connect(function(player, part, networkOwner)
-        if part and part:IsA("BasePart") then
-            part:SetNetworkOwner(networkOwner)
-            part.Anchored = false
-            part.CanCollide = true
-            part.CanTouch = true
-        end
-    end)
-]]
-
-pcall(loadstring(serverScriptCode))
 
 local function getPlayerNames()
     local playerNames = {}
@@ -292,8 +284,7 @@ local function teleportToPlayer(playerName)
     print("Teletransportado para " .. playerName .. ".")
 end
 
--- Fling Ball V3 - Optimized
--- Improved Fling Ball V4: Uses targeted CFrame spam to actually fling the player via ball collisions (server-side effect)
+-- Fling Ball V3 - Improved (Targets selected player for void/fling)
 local function flingBallV3()
     if not selectedPlayer or not selectedPlayer.Character then
         warn("Selecione um jogador alvo primeiro!")
@@ -364,11 +355,6 @@ local function flingBallV3()
     end)
 end
 
-    flingBallTowardsTarget()
-    task.wait(0.5)
-    flingTargetToVoid()
-end
-
 -- Player dropdown
 local selectedPlayerName
 local PlayerDropdown = TrollTab:AddDropdown({
@@ -434,7 +420,7 @@ TrollTab:AddSection({"Fling"})
 
 TrollTab:AddButton({
     Name = "Fling Bola V3 Experimental",
-    Description = "Arremessa bola com força extrema + Auto-Void (use com cuidado!)",
+    Description = "Arremessa bola com força extrema + Fling Alvo (spam CFrame para efeito server-side!)",
     Callback = flingBallV3
 })
 
