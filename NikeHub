@@ -293,7 +293,7 @@ local function teleportToPlayer(playerName)
 end
 
 -- Fling Ball V3 - Optimized
--- Fling Ball V3 - Improved (Targets selected player for void/fling instead of self)
+-- Improved Fling Ball V4: Uses targeted CFrame spam to actually fling the player via ball collisions (server-side effect)
 local function flingBallV3()
     if not selectedPlayer or not selectedPlayer.Character then
         warn("Selecione um jogador alvo primeiro!")
@@ -310,75 +310,59 @@ local function flingBallV3()
     end
 
     local FLING_FORCE = 999999
-    local VOID_POSITION = Vector3.new(0, -5000, 0)  -- Changed to actual void (negative Y for falling into abyss)
-    local SPAM_DELAY = 0.05
+    local SPAM_COUNT = 50  -- Increased for stronger fling effect
+    local SPAM_DELAY = 0.01  -- Faster spam for rapid hits
+    local OFFSET = Vector3.new(0, 5, 0)  -- Slight offset to hit from above
 
     local function hasSoccerBall()
         return Character:FindFirstChild("SoccerBall") ~= nil
     end
 
-    local function flingBallTowardsTarget()
-        if not hasSoccerBall() then
-            warn("Sem SoccerBall! Pegue uma bola no jogo primeiro.")
-            return
-        end
+    if not hasSoccerBall() then
+        warn("Sem SoccerBall! Pegue uma bola no jogo primeiro.")
+        return
+    end
 
-        local SoccerBall = Character.SoccerBall
-        local BallPart = SoccerBall:FindFirstChild("Handle") or SoccerBall
-        
-        -- Calculate fling towards target for better troll effect
-        local directionToTarget = (targetHRP.Position - HumanoidRootPart.Position).Unit
-        local flingCFrame = CFrame.new(
-            targetHRP.Position + directionToTarget * 10 + Vector3.new(math.random(-10, 10), FLING_FORCE / 100, math.random(-10, 10)),
-            targetHRP.Position + Vector3.new(math.random(-FLING_FORCE/10, FLING_FORCE/10), 0, math.random(-FLING_FORCE/10, FLING_FORCE/10))
+    local SoccerBall = Character.SoccerBall
+    local FootballRemote = SoccerBall:WaitForChild("FootballInteraction")
+
+    -- Function to generate a fling CFrame targeted at the player
+    local function generateTargetCFrame()
+        local targetPos = targetHRP.Position + OFFSET
+        -- Create a CFrame that points towards the target with random rotation for chaotic fling
+        local lookDirection = (targetPos - HumanoidRootPart.Position).Unit
+        local randomRotation = CFrame.Angles(
+            math.rad(math.random(-180, 180)),
+            math.rad(math.random(-180, 180)),
+            math.rad(math.random(-180, 180))
         )
+        return CFrame.new(targetPos, targetPos + lookDirection) * randomRotation
+    end
 
-        for i = 1, 10 do  -- Reduced iterations for efficiency
-            local spamCFrame = flingCFrame + Vector3.new(math.random(-5, 5), math.random(0, FLING_FORCE / 100), math.random(-5, 5))
+    -- Spam the remote with targeted CFrames to repeatedly "teleport" the ball into the target, causing server-side flings
+    spawn(function()
+        for i = 1, SPAM_COUNT do
+            local targetCFrame = generateTargetCFrame()
             pcall(function()
-                SoccerBall.FootballInteraction:FireServer(spamCFrame)
+                FootballRemote:FireServer(targetCFrame)
             end)
             task.wait(SPAM_DELAY)
         end
+        print("Fling bola spamado no alvo! Isso deve flingar ele de verdade via colisões da bola.")
+    end)
 
-        print("Bola arremessada em direção ao alvo com força V3!")
-    end
-
-    local function flingTargetToVoid()
-        -- Set network ownership to local player for target's HRP
+    -- Optional: Follow up with direct velocity if ownership is active (backup)
+    spawn(function()
+        task.wait(0.5)
         pcall(function()
-            SetNetworkOwnerEvent:FireServer(targetHRP, LocalPlayer)
+            targetHRP.AssemblyLinearVelocity = Vector3.new(
+                math.random(-FLING_FORCE, FLING_FORCE),
+                FLING_FORCE * 2,  -- Upward fling for dramatic effect
+                math.random(-FLING_FORCE, FLING_FORCE)
+            )
         end)
-        
-        task.wait(0.1)  -- Small delay for ownership to take effect
-        
-        -- Fling with high velocity for dramatic effect, then tween to void position
-        targetHRP.Velocity = Vector3.new(
-            math.random(-FLING_FORCE/2, FLING_FORCE/2), 
-            -FLING_FORCE,  -- Downward for void fling
-            math.random(-FLING_FORCE/2, FLING_FORCE/2)
-        )
-        
-        -- Tween to ensure it reaches void (backup if velocity doesn't stick)
-        local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)  -- Faster tween for void send
-        local voidTween = TweenService:Create(targetHRP, tweenInfo, { CFrame = CFrame.new(VOID_POSITION) })
-        voidTween:Play()
-        
-        voidTween.Completed:Connect(function()
-            print(selectedPlayer.Name .. " flinged para o void!")
-            -- Optional: Keep flinging velocity periodically to prevent recovery
-            spawn(function()
-                for i = 1, 5 do  -- Short burst to maintain fling
-                    task.wait(0.5)
-                    if targetHRP and targetHRP.Parent then
-                        targetHRP.Velocity = Vector3.new(0, -FLING_FORCE / 2, 0)
-                    else
-                        break
-                    end
-                end
-            end)
-        end)
-    end
+    end)
+end
 
     flingBallTowardsTarget()
     task.wait(0.5)
