@@ -420,7 +420,7 @@ local function pullWithSofa(targetPlayer)
     originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
 end
 
-Tab9:AddButton({
+TrollTab:AddButton({
     Name = "Matar",
     Description = "Inicia o matar com o método selecionado",
     Callback = function()
