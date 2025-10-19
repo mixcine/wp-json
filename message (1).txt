@@ -1974,7 +1974,6 @@ end
 
 ------------novo teste experimental--------------
 
-
 ---------------------------------------------------------------------------------------------------------------------------------
 -- === Troll Avançado (Não Visual) - Com Captures Integrados === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -2126,7 +2125,7 @@ Tab9:AddToggle({
     end
 })
 
--- Fling Direto Non-Visual (part invisível + velocity, corrigido para flingar o TARGET para longe, não você)
+-- Fling Direto Non-Visual (part invisível + velocity, com equipBola otimizado)
 local directFlingEnabled = false
 local directFlingConnection = nil
 local invisiblePart = nil
@@ -2134,20 +2133,12 @@ local invisiblePart = nil
 local function createInvisiblePart()
     invisiblePart = Instance.new("Part")
     invisiblePart.Name = "InvisibleFlingPart_" .. LocalPlayer.Name
-    invisiblePart.Size = Vector3.new(6, 6, 6)  -- Tamanho para colidir bem
+    invisiblePart.Size = Vector3.new(6, 6, 6)  -- Maior pra colidir melhor
     invisiblePart.Transparency = 1  -- 100% invisível
-    invisiblePart.CanCollide = false  -- Inicial off, ativa só pro target
+    invisiblePart.CanCollide = false
     invisiblePart.Anchored = false
     invisiblePart.Material = Enum.Material.ForceField
     invisiblePart.Parent = Workspace
-    
-    -- Evita colidir com você (user) - filtro de colisão
-    invisiblePart.Touched:Connect(function(hit)
-        if hit.Parent == LocalPlayer.Character then
-            hit:Destroy()  -- Ignora se tocar no seu char
-        end
-    end)
-    
     return invisiblePart
 end
 
@@ -2159,12 +2150,12 @@ local function toggleDirectFling(state)
     if not targetHRP then return false end
 
     if state then
-        if not equipBola() then  -- Usa capture pra limpar/equipar (opcional, mas mantém)
+        if not equipBola() then  -- Usa sua capture pra bola invisível (mas não spawna visual)
             task.wait(0.5)
         end
         invisiblePart = createInvisiblePart()
 
-        takeOwnership(targetHRP, selectedPlayer)  -- Ownership no target
+        takeOwnership(targetHRP, selectedPlayer)
 
         directFlingEnabled = true
         directFlingConnection = RunService.Heartbeat:Connect(function()
@@ -2174,22 +2165,19 @@ local function toggleDirectFling(state)
                 return
             end
 
-            -- Posiciona part LEVEMENTE ATRÁS do target (pra empurrar ELE pra frente/long)
-            local flingDirection = targetHRP.CFrame.LookVector  -- Direção que o target tá olhando
-            local behindPos = targetHRP.Position - (flingDirection * 10)  -- Atrás dele, mais longe
-            invisiblePart.CFrame = CFrame.new(behindPos, targetHRP.Position)  -- Olha pro target
+            -- Posiciona invisível part no target (sem visual)
+            local behindPos = targetHRP.Position - (targetHRP.CFrame.LookVector * 8)
+            invisiblePart.CFrame = CFrame.new(behindPos, targetHRP.Position)
 
-            -- Ativa colisão SÓ pro target (evita você)
             invisiblePart.CanCollide = true
 
-            -- Velocity ALTA NA DIREÇÃO DO TARGET (empurra ELE pra longe, não você)
+            -- Velocity alta pra colidir/fling (server-side physics)
             local bv = Instance.new("BodyVelocity")
-            bv.MaxForce = Vector3.new(4000, 4000, 4000)  -- Força maior pra empurrar
-            bv.Velocity = flingDirection * 1200 + Vector3.new(0, 400, 0)  -- Direto nele + up, mais forte
+            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bv.Velocity = (targetHRP.Position - invisiblePart.Position).Unit * 800 + Vector3.new(0, 300, 0)
             bv.Parent = invisiblePart
 
-            -- Remove BV após colisão (0.3s) pra loop contínuo
-            task.delay(0.3, function()
+            task.delay(0.4, function()
                 if bv and bv.Parent then bv:Destroy() end
             end)
         end)
@@ -2201,16 +2189,6 @@ local function toggleDirectFling(state)
         return true
     end
 end
-
-Tab9:AddToggle({
-    Name = "Fling Direto (Non-Visual)",
-    Description = "Fling no TARGET pra longe (corrigido: você não voa, ele voa)",
-    Default = false,
-    Callback = function(state)
-        directFlingEnabled = state
-        if not toggleDirectFling(state) then directFlingEnabled = false end
-    end
-})
 
 Tab9:AddToggle({
     Name = "Fling Direto (Non-Visual)",
@@ -2232,6 +2210,7 @@ Tab9:AddButton({
         toggleDirectFling(false)
     end
 })
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
                                                    --fling com bola--
@@ -3464,6 +3443,7 @@ Tab12:AddButton({
 })
 
 print("Hanzod Client Brookhaven carregado com sucesso!")
+
 
 
 
