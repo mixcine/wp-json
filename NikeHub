@@ -293,18 +293,31 @@ local function teleportToPlayer(playerName)
 end
 
 -- Fling Ball V3 - Optimized
+-- Fling Ball V3 - Improved (Targets selected player for void/fling instead of self)
 local function flingBallV3()
+    if not selectedPlayer or not selectedPlayer.Character then
+        warn("Selecione um jogador alvo primeiro!")
+        return
+    end
+
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    local targetCharacter = selectedPlayer.Character
+    local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+    if not targetHRP then
+        warn("Personagem do alvo não carregado!")
+        return
+    end
+
     local FLING_FORCE = 999999
-    local VOID_POSITION = Vector3.new(0, 5000, 0)
+    local VOID_POSITION = Vector3.new(0, -5000, 0)  -- Changed to actual void (negative Y for falling into abyss)
     local SPAM_DELAY = 0.05
 
     local function hasSoccerBall()
         return Character:FindFirstChild("SoccerBall") ~= nil
     end
 
-    local function flingBall()
+    local function flingBallTowardsTarget()
         if not hasSoccerBall() then
             warn("Sem SoccerBall! Pegue uma bola no jogo primeiro.")
             return
@@ -312,43 +325,64 @@ local function flingBallV3()
 
         local SoccerBall = Character.SoccerBall
         local BallPart = SoccerBall:FindFirstChild("Handle") or SoccerBall
+        
+        -- Calculate fling towards target for better troll effect
+        local directionToTarget = (targetHRP.Position - HumanoidRootPart.Position).Unit
         local flingCFrame = CFrame.new(
-            HumanoidRootPart.Position + Vector3.new(math.random(-50, 50), FLING_FORCE / 100, math.random(-50, 50)),
-            HumanoidRootPart.Position + Vector3.new(math.random(-FLING_FORCE, FLING_FORCE), 0, math.random(-FLING_FORCE, FLING_FORCE))
+            targetHRP.Position + directionToTarget * 10 + Vector3.new(math.random(-10, 10), FLING_FORCE / 100, math.random(-10, 10)),
+            targetHRP.Position + Vector3.new(math.random(-FLING_FORCE/10, FLING_FORCE/10), 0, math.random(-FLING_FORCE/10, FLING_FORCE/10))
         )
 
-        for i = 1, 10 do -- Reduced iterations for efficiency
-            local spamCFrame = flingCFrame + Vector3.new(math.random(-10, 10), math.random(0, FLING_FORCE / 50), math.random(-10, 10))
+        for i = 1, 10 do  -- Reduced iterations for efficiency
+            local spamCFrame = flingCFrame + Vector3.new(math.random(-5, 5), math.random(0, FLING_FORCE / 100), math.random(-5, 5))
             pcall(function()
                 SoccerBall.FootballInteraction:FireServer(spamCFrame)
             end)
             task.wait(SPAM_DELAY)
         end
 
-        print("Bola arremessada com força V3!")
+        print("Bola arremessada em direção ao alvo com força V3!")
     end
 
-    local function autoVoid()
-        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local voidTween = TweenService:Create(HumanoidRootPart, tweenInfo, { CFrame = CFrame.new(VOID_POSITION) })
+    local function flingTargetToVoid()
+        -- Set network ownership to local player for target's HRP
+        pcall(function()
+            SetNetworkOwnerEvent:FireServer(targetHRP, LocalPlayer)
+        end)
+        
+        task.wait(0.1)  -- Small delay for ownership to take effect
+        
+        -- Fling with high velocity for dramatic effect, then tween to void position
+        targetHRP.Velocity = Vector3.new(
+            math.random(-FLING_FORCE/2, FLING_FORCE/2), 
+            -FLING_FORCE,  -- Downward for void fling
+            math.random(-FLING_FORCE/2, FLING_FORCE/2)
+        )
+        
+        -- Tween to ensure it reaches void (backup if velocity doesn't stick)
+        local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)  -- Faster tween for void send
+        local voidTween = TweenService:Create(targetHRP, tweenInfo, { CFrame = CFrame.new(VOID_POSITION) })
         voidTween:Play()
-
+        
         voidTween.Completed:Connect(function()
-            print("Player no void! Mantendo posição...")
+            print(selectedPlayer.Name .. " flinged para o void!")
+            -- Optional: Keep flinging velocity periodically to prevent recovery
             spawn(function()
-                while true do
+                for i = 1, 5 do  -- Short burst to maintain fling
                     task.wait(0.5)
-                    if HumanoidRootPart.Position.Y < VOID_POSITION.Y - 100 then
-                        HumanoidRootPart.CFrame = CFrame.new(VOID_POSITION)
+                    if targetHRP and targetHRP.Parent then
+                        targetHRP.Velocity = Vector3.new(0, -FLING_FORCE / 2, 0)
+                    else
+                        break
                     end
                 end
             end)
         end)
     end
 
-    flingBall()
+    flingBallTowardsTarget()
     task.wait(0.5)
-    autoVoid()
+    flingTargetToVoid()
 end
 
 -- Player dropdown
