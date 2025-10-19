@@ -1,0 +1,447 @@
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local Config = { Duration = 10, FadeTime = 2 }
+
+-- Create the loading screen GUI
+local function CreateInterface()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "LynixHubBrookhaven"
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.IgnoreGuiInset = true
+    gui.ScreenInsets = Enum.ScreenInsets.None
+
+    local main = Instance.new("Frame")
+    main.Parent = gui
+    main.BackgroundTransparency = 1
+    main.Size = UDim2.new(1, 0, 1, 0)
+    main.ZIndex = 10
+
+    local bgImage = Instance.new("ImageLabel")
+    bgImage.Parent = main
+    bgImage.BackgroundTransparency = 1
+    bgImage.Size = UDim2.new(1, 0, 1, 0)
+    bgImage.Image = "rbxassetid://92938877761950"
+    bgImage.ScaleType = Enum.ScaleType.Stretch
+    bgImage.ZIndex = 1
+
+    local center = Instance.new("Frame")
+    center.Parent = main
+    center.BackgroundTransparency = 1
+    center.Size = UDim2.new(0, 700, 0, 150)
+    center.Position = UDim2.new(0.5, -350, 0.7, -75)
+    center.ZIndex = 20
+
+    local title = Instance.new("TextLabel")
+    title.Parent = center
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.new(1, 0, 0, 50)
+    title.Text = "Lynix Hub"
+    title.TextColor3 = Color3.fromRGB(0, 0, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 21
+
+    local titleStroke = Instance.new("UIStroke")
+    titleStroke.Parent = title
+    titleStroke.Color = Color3.fromRGB(139, 0, 0)
+    titleStroke.Thickness = 4
+
+    local progBg = Instance.new("Frame")
+    progBg.Parent = center
+    progBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    progBg.Size = UDim2.new(1, 0, 0, 35)
+    progBg.Position = UDim2.new(0, 0, 0, 60)
+    progBg.ZIndex = 19
+
+    local progCorner = Instance.new("UICorner")
+    progCorner.CornerRadius = UDim.new(0, 17)
+    progCorner.Parent = progBg
+
+    local progStroke = Instance.new("UIStroke")
+    progStroke.Parent = progBg
+    progStroke.Color = Color3.fromRGB(139, 0, 0)
+    progStroke.Thickness = 3
+
+    local progressBar = Instance.new("Frame")
+    progressBar.Parent = progBg
+    progressBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    progressBar.Size = UDim2.new(0, 0, 1, 0)
+    progressBar.ZIndex = 20
+
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 17)
+    barCorner.Parent = progressBar
+
+    local barStroke = Instance.new("UIStroke")
+    barStroke.Parent = progressBar
+    barStroke.Color = Color3.fromRGB(139, 0, 0)
+    barStroke.Thickness = 2
+
+    local barGrad = Instance.new("UIGradient")
+    barGrad.Parent = progressBar
+    barGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(50, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    })
+
+    local percentage = Instance.new("TextLabel")
+    percentage.Parent = center
+    percentage.BackgroundTransparency = 1
+    percentage.Size = UDim2.new(1, 0, 0, 40)
+    percentage.Position = UDim2.new(0, 0, 0, 110)
+    percentage.Text = "0%"
+    percentage.TextColor3 = Color3.fromRGB(0, 0, 0)
+    percentage.TextScaled = true
+    percentage.Font = Enum.Font.GothamBold
+    percentage.ZIndex = 21
+
+    local percentStroke = Instance.new("UIStroke")
+    percentStroke.Parent = percentage
+    percentStroke.Color = Color3.fromRGB(139, 0, 0)
+    percentStroke.Thickness = 4
+
+    return gui, progressBar, percentage, main
+end
+
+-- Start the loading animation
+local function StartLoading()
+    local gui, progressBar, percentage, mainFrame = CreateInterface()
+    local startTime = tick()
+
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = math.min(elapsed / Config.Duration, 1)
+        progressBar:TweenSize(UDim2.new(progress, 0, 1, 0), "Out", "Quart", 0.2, true)
+        percentage.Text = math.floor(progress * 100) .. "%"
+
+        if progress >= 1 then
+            connection:Disconnect()
+            task.wait(1)
+            local fadeOut = TweenService:Create(mainFrame, TweenInfo.new(Config.FadeTime, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                BackgroundTransparency = 1
+            })
+            fadeOut:Play()
+            fadeOut.Completed:Connect(function()
+                gui:Destroy()
+            end)
+        end
+    end)
+end
+
+StartLoading()
+
+-- Load external library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ndark5243-arch/Libraryhanzodred/refs/heads/main/Main.txt"))()
+
+workspace.FallenPartsDestroyHeight = -math.huge
+
+-- Create main window
+local Window = Library:MakeWindow({
+    Title = "Lynix Hub 🏡 | Brookhaven RP",
+    SubTitle = "by: Shadow, Void777, God777",
+    LoadText = "Carregando Lynix Hub",
+    Flags = "LynixHub_Brookhaven"
+})
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://92938877761950", BackgroundTransparency = 1 },
+    Corner = { CornerRadius = UDim.new(0, 35) }
+})
+
+-- Troll tab
+local TrollTab = Window:MakeTab({"Troll", "skull"})
+
+local selectedPlayer
+local isSpectating = false
+local spectatedPlayer
+local characterConnection
+
+-- Setup network ownership event
+local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
+SetNetworkOwnerEvent.Name = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))
+SetNetworkOwnerEvent.Parent = ReplicatedStorage
+
+local serverScriptCode = [[
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:WaitForChild("]] .. SetNetworkOwnerEvent.Name .. [[")
+    event.OnServerEvent:Connect(function(player, part, networkOwner)
+        if part and part:IsA("BasePart") then
+            part:SetNetworkOwner(networkOwner)
+            part.Anchored = false
+            part.CanCollide = true
+            part.CanTouch = true
+        end
+    end)
+]]
+
+pcall(loadstring(serverScriptCode))
+
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+local function updateDropdown(dropdown, spectateToggle)
+    local currentValue = dropdown:Get()
+    local playerNames = getPlayerNames()
+    dropdown:Set(playerNames)
+    if currentValue and not table.find(playerNames, currentValue) then
+        dropdown:Set("")
+        selectedPlayer = nil
+        if isSpectating then
+            stopSpectating()
+            spectateToggle:Set(false)
+        end
+    elseif currentValue and table.find(playerNames, currentValue) then
+        dropdown:Set(currentValue)
+    end
+end
+
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then return end
+            local humanoid = spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid")
+            Workspace.CurrentCamera.CameraSubject = humanoid or nil
+        end
+
+        updateCamera()
+        characterConnection = RunService.Heartbeat:Connect(updateCamera)
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then updateCamera() end
+        end)
+    else
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    Workspace.CurrentCamera.CameraSubject = humanoid or nil
+    Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+end
+
+local function teleportToPlayer(playerName)
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if not (targetPlayer and LocalPlayer.Character and targetPlayer.Character) then
+        print("Jogador ou personagem não encontrado.")
+        return
+    end
+
+    local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+    local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not (myHRP and myHumanoid and targetHRP) then
+        print("Personagem não está carregado para teletransporte.")
+        return
+    end
+
+    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Velocity = Vector3.zero
+            part.RotVelocity = Vector3.zero
+            part.Anchored = true
+        end
+    end
+
+    myHRP.CFrame = CFrame.new(targetHRP.Position + Vector3.new(0, 2, 0))
+    myHumanoid.Sit = false
+    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+    task.wait(0.5)
+    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Anchored = false
+            part.Velocity = Vector3.zero
+            part.RotVelocity = Vector3.zero
+        end
+    end
+
+    print("Teletransportado para " .. playerName .. ".")
+end
+
+-- Fling Ball V3 - Optimized
+local function flingBallV3()
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    local FLING_FORCE = 999999
+    local VOID_POSITION = Vector3.new(0, 5000, 0)
+    local SPAM_DELAY = 0.05
+
+    local function hasSoccerBall()
+        return Character:FindFirstChild("SoccerBall") ~= nil
+    end
+
+    local function flingBall()
+        if not hasSoccerBall() then
+            warn("Sem SoccerBall! Pegue uma bola no jogo primeiro.")
+            return
+        end
+
+        local SoccerBall = Character.SoccerBall
+        local BallPart = SoccerBall:FindFirstChild("Handle") or SoccerBall
+        local flingCFrame = CFrame.new(
+            HumanoidRootPart.Position + Vector3.new(math.random(-50, 50), FLING_FORCE / 100, math.random(-50, 50)),
+            HumanoidRootPart.Position + Vector3.new(math.random(-FLING_FORCE, FLING_FORCE), 0, math.random(-FLING_FORCE, FLING_FORCE))
+        )
+
+        for i = 1, 10 do -- Reduced iterations for efficiency
+            local spamCFrame = flingCFrame + Vector3.new(math.random(-10, 10), math.random(0, FLING_FORCE / 50), math.random(-10, 10))
+            pcall(function()
+                SoccerBall.FootballInteraction:FireServer(spamCFrame)
+            end)
+            task.wait(SPAM_DELAY)
+        end
+
+        print("Bola arremessada com força V3!")
+    end
+
+    local function autoVoid()
+        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local voidTween = TweenService:Create(HumanoidRootPart, tweenInfo, { CFrame = CFrame.new(VOID_POSITION) })
+        voidTween:Play()
+
+        voidTween.Completed:Connect(function()
+            print("Player no void! Mantendo posição...")
+            spawn(function()
+                while true do
+                    task.wait(0.5)
+                    if HumanoidRootPart.Position.Y < VOID_POSITION.Y - 100 then
+                        HumanoidRootPart.CFrame = CFrame.new(VOID_POSITION)
+                    end
+                end
+            end)
+        end)
+    end
+
+    flingBall()
+    task.wait(0.5)
+    autoVoid()
+end
+
+-- Player dropdown
+local selectedPlayerName
+local PlayerDropdown = TrollTab:AddDropdown({
+    Name = "Selecionar Jogador",
+    Description = "Escolha um jogador para visualizar ou teletransportar",
+    Default = "",
+    Multi = false,
+    Options = getPlayerNames(),
+    Flag = "player_list",
+    Callback = function(playerName)
+        selectedPlayerName = playerName
+        selectedPlayer = playerName and playerName ~= "" and Players:FindFirstChild(playerName) or nil
+        if not selectedPlayer and isSpectating then
+            stopSpectating()
+            SpectateToggle:Set(false)
+        elseif isSpectating then
+            stopSpectating()
+            spectatePlayer(playerName)
+        end
+    end
+})
+
+TrollTab:AddButton({
+    Name = "Atualizar Lista",
+    Callback = function()
+        PlayerDropdown:Set(getPlayerNames())
+    end
+})
+
+-- Teleport button
+TrollTab:AddButton({
+    Name = "Teleportar para Jogador",
+    Description = "Teletransporta para o jogador selecionado",
+    Callback = function()
+        if selectedPlayerName and selectedPlayerName ~= "" then
+            pcall(teleportToPlayer, selectedPlayerName)
+        else
+            print("Selecione um jogador antes de teletransportar.")
+        end
+    end
+})
+
+-- Spectate toggle
+local SpectateToggle = TrollTab:AddToggle({
+    Name = "Visualizar Jogador",
+    Description = "Ativa/desativa a visualização do jogador selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if selectedPlayer then
+                spectatePlayer(selectedPlayer.Name)
+            else
+                SpectateToggle:Set(false)
+            end
+        else
+            stopSpectating()
+        end
+    end
+})
+
+-- Fling section
+TrollTab:AddSection({"Fling"})
+
+TrollTab:AddButton({
+    Name = "Fling Bola V3 Experimental",
+    Description = "Arremessa bola com força extrema + Auto-Void (use com cuidado!)",
+    Callback = flingBallV3
+})
+
+-- Handle player events
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(PlayerDropdown, SpectateToggle)
+    if selectedPlayer == player then
+        selectedPlayer = nil
+        selectedPlayerName = nil
+        if isSpectating then stopSpectating() end
+        SpectateToggle:Set(false)
+        PlayerDropdown:Set("")
+    end
+end)
+
+Players.PlayerAdded:Connect(function()
+    task.wait(1)
+    updateDropdown(PlayerDropdown, SpectateToggle)
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if isSpectating then
+        stopSpectating()
+        SpectateToggle:Set(false)
+    end
+end)
+
+print("Lynix Hub Brookhaven carregado com sucesso!")
