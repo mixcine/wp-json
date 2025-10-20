@@ -619,6 +619,29 @@ local function killWithSofa(targetPlayer)
     if not equipSofa() then return end
     isFollowingKill = true
     originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+    -- Melhoria: Inicia o follow e fling imediatamente com força maior
+    local character = LocalPlayer.Character
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if myHRP and targetHRP then
+        -- Aumenta a força do follow e adiciona rotação para maior instabilidade
+        local followConn = RunService.Heartbeat:Connect(function()
+            if not isFollowingKill then
+                followConn:Disconnect()
+                return
+            end
+            pcall(function()
+                local targetPosition = targetHRP.Position + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                character:SetPrimaryPartCFrame(
+                    CFrame.new(targetPosition) * CFrame.Angles(
+                        math.rad(Workspace.DistributedGameTime * 24000), -- Dobrou a velocidade de rotação para mais força
+                        math.rad(Workspace.DistributedGameTime * 30000),
+                        math.rad(Workspace.DistributedGameTime * 36000)
+                    )
+                )
+            end)
+        end)
+    end
 end
 
 local function pullWithSofa(targetPlayer)
@@ -801,6 +824,27 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
             if selectedPlayer.Character.Humanoid.Sit then
                 if isFollowingKill then
                     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        -- Melhoria: Fling mais forte para o vazio
+                        local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if targetHRP then
+                            for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CanCollide = false
+                                end
+                            end
+                            local voidFling = Instance.new("BodyVelocity")
+                            voidFling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            voidFling.Velocity = Vector3.new(math.random(-50,50), 1000, math.random(-50,50)).Unit * 2000000 + Vector3.new(0, 5000000, 0) -- Força massiva para o vazio
+                            voidFling.Parent = targetHRP
+                            task.delay(1, function()
+                                voidFling:Destroy()
+                                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        part.CanCollide = true
+                                    end
+                                end
+                            end)
+                        end
                         LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
                         task.wait(0.5)
                         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
@@ -1148,9 +1192,10 @@ local function flingWithBall(targetPlayer)
             for _, part in ipairs(targetPlayer.Character:GetDescendants()) do
                 if part:IsA("BasePart") then part.CanCollide = false end
             end
+            -- Melhoria: Fling mais forte para o vazio
             local fling = Instance.new("BodyVelocity")
             fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0)
+            fling.Velocity = Vector3.new(math.random(-50, 50), 1000, math.random(-50, 50)).Unit * 1000000 + Vector3.new(0, 5000000, 0) -- Aumentada a força
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
@@ -1228,9 +1273,10 @@ local function flingWithBallV2(targetPlayer)
             for _, part in ipairs(targetPlayer.Character:GetDescendants()) do
                 if part:IsA("BasePart") then part.CanCollide = false end
             end
+            -- Melhoria: Fling mais forte para o vazio
             local fling = Instance.new("BodyVelocity")
             fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0)
+            fling.Velocity = Vector3.new(math.random(-50, 50), 1000, math.random(-50, 50)).Unit * 1000000 + Vector3.new(0, 5000000, 0) -- Aumentada a força
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
