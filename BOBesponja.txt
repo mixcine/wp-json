@@ -591,6 +591,345 @@ local DropdownKillPullMethod = Tab9:AddDropdown({
     end
 })
 
+
+-----lag teste servidor-----
+
+---------------------------------------------------------------------------------------------------------------------------------
+-- === LAG/FREEZE SERVER === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+local SectionLag = Tab9:AddSection({"Lag/Freeze Server"})
+
+-- Lista de posições pré-definidas (você pode adicionar mais)
+local lagPositions = {
+    Vector3.new(-208.389, 33.399, -314.752),
+    Vector3.new(-61.193, 3.300, -5.778),
+    Vector3.new(-11.240, 1.901, -24.503),
+    Vector3.new(-40.516, 3.016, -56.144),
+    Vector3.new(0, 5, 0), -- Posição padrão
+    Vector3.new(100, 10, 100),
+    Vector3.new(-100, 10, -100)
+}
+
+-- Configurações do lag
+local lagConfig = {
+    maxLagObjects = 50, -- Máximo de objetos por jogador
+    delayBetweenPlayers = 0.1, -- Delay entre jogadores (segundos)
+    spamDuration = 5, -- Duração do spam (segundos)
+    useRandomPos = true -- Usar posições aleatórias
+}
+
+-- Função para criar argumentos do 1Gu1n
+local function createLagArgs(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then return nil end
+    local hrp = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    
+    -- Posição alvo
+    local targetPos = hrp.Position
+    local lagPos
+    if lagConfig.useRandomPos then
+        -- Posição aleatória próxima ao jogador
+        local offset = Vector3.new(
+            math.random(-20, 20),
+            math.random(-5, 10),
+            math.random(-20, 20)
+        )
+        lagPos = targetPos + offset
+    else
+        -- Usa posições pré-definidas
+        local randomIndex = math.random(1, #lagPositions)
+        lagPos = lagPositions[randomIndex]
+    end
+    
+    local args = {
+        hrp, -- [1] HumanoidRootPart origem
+        hrp, -- [2] HumanoidRootPart destino  
+        vector.create(2147483648, 2147483648, 2147483648), -- [3] Vector max (fling extremo)
+        lagPos, -- [4] Posição do lag
+        0, -- [5] 
+        0, -- [6]
+        0, -- [7] 
+        0, -- [8]
+        {false}, -- [9] 
+        { -- [10] Propriedades do objeto
+            25, -- Tamanho?
+            vector.create(100, 100, 100), -- Escala
+            BrickColor.new(29), -- Cor (Bright green)
+            0.25, -- Transparency
+            Enum.Material.SmoothPlastic, -- Material
+            0.25 -- ?
+        },
+        true, -- [11]
+        false -- [12]
+    }
+    return args
+end
+
+-- Função para aplicar lag em UM jogador
+local function lagSinglePlayer(targetPlayer, duration)
+    if not targetPlayer or not targetPlayer.Character then return false end
+    
+    local remote = ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Gu1n")
+    local successCount = 0
+    local startTime = tick()
+    
+    spawn(function()
+        while tick() - startTime < (duration or lagConfig.spamDuration) do
+            local args = createLagArgs(targetPlayer)
+            if args then
+                local success = pcall(function()
+                    remote:FireServer(unpack(args))
+                end)
+                if success then
+                    successCount = successCount + 1
+                end
+            end
+            task.wait(0.05) -- Delay entre spams (50ms)
+        end
+        print("Lag aplicado em " .. targetPlayer.Name .. " - " .. successCount .. " pacotes enviados")
+        return true
+    end)
+    
+    return true
+end
+
+-- Função para lag em TODOS os jogadores
+local function lagAllPlayers(duration)
+    local playerList = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        -- Exclui você mesmo e jogadores na whitelist
+        local isExcluded = false
+        for _, excluded in ipairs(excludedPlayers) do
+            if player == excluded then
+                isExcluded = true
+                break
+            end
+        end
+        if player ~= LocalPlayer and not isExcluded and player.Character then
+            table.insert(playerList, player)
+        end
+    end
+    
+    if #playerList == 0 then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Nenhum jogador válido encontrado!",
+            Duration = 3
+        })
+        return
+    end
+    
+    local totalSuccess = 0
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Lag Server",
+        Text = "Aplicando lag em " .. #playerList .. " jogadores...",
+        Duration = 3
+    })
+    
+    for i, targetPlayer in ipairs(playerList) do
+        local success = lagSinglePlayer(targetPlayer, duration)
+        if success then
+            totalSuccess = totalSuccess + 1
+        end
+        task.wait(lagConfig.delayBetweenPlayers) -- Delay entre jogadores
+    end
+    
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Lag Concluído",
+        Text = "Lag aplicado em " .. totalSuccess .. "/" .. #playerList .. " jogadores",
+        Duration = 5
+    })
+end
+
+-- Dropdown para método de lag
+local DropdownLagMethod = Tab9:AddDropdown({
+    Name = "Método de Lag",
+    Description = "Escolha o método de lag",
+    Options = {"Lag Rápido (5s)", "Lag Médio (10s)", "Lag Pesado (15s)", "Lag Todos", "Lag Custom"},
+    Default = "Lag Rápido (5s)",
+    Callback = function(value)
+        selectedLagMethod = value
+    end
+})
+
+-- TextBox para duração customizada
+local LagDurationInput = Tab9:AddTextBox({
+    Name = "Duração Custom (segundos)",
+    Description = "Digite a duração em segundos (apenas para Lag Custom)",
+    PlaceholderText = "10",
+    Callback = function(value)
+        local numValue = tonumber(value)
+        if numValue and numValue > 0 then
+            customLagDuration = numValue
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Duração definida",
+                Text = "Lag custom configurado para " .. numValue .. " segundos",
+                Duration = 2
+            })
+        end
+    end
+})
+
+-- Botão principal LAG
+Tab9:AddButton({
+    Name = "🚨 ATIVAR LAG/FREEZE",
+    Description = "Aplica lag no servidor/jogadores selecionados",
+    Callback = function()
+        local method = DropdownLagMethod:Get()
+        local duration
+        
+        if method == "Lag Rápido (5s)" then
+            duration = 5
+            if selectedPlayer then
+                lagSinglePlayer(selectedPlayer, duration)
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Lag Single",
+                    Text = "Lag rápido aplicado em " .. selectedPlayer.Name,
+                    Duration = 3
+                })
+            else
+                lagAllPlayers(duration)
+            end
+        elseif method == "Lag Médio (10s)" then
+            duration = 10
+            if selectedPlayer then
+                lagSinglePlayer(selectedPlayer, duration)
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Lag Single",
+                    Text = "Lag médio aplicado em " .. selectedPlayer.Name,
+                    Duration = 3
+                })
+            else
+                lagAllPlayers(duration)
+            end
+        elseif method == "Lag Pesado (15s)" then
+            duration = 15
+            if selectedPlayer then
+                lagSinglePlayer(selectedPlayer, duration)
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Lag Single",
+                    Text = "Lag pesado aplicado em " .. selectedPlayer.Name,
+                    Duration = 3
+                })
+            else
+                lagAllPlayers(duration)
+            end
+        elseif method == "Lag Todos" then
+            lagAllPlayers(8) -- 8 segundos para todos
+        elseif method == "Lag Custom" then
+            duration = customLagDuration or 10
+            if selectedPlayer then
+                lagSinglePlayer(selectedPlayer, duration)
+            else
+                lagAllPlayers(duration)
+            end
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Lag Custom",
+                Text = "Lag custom (" .. duration .. "s) aplicado!",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Toggle para configurações avançadas
+local LagConfigToggle = Tab9:AddToggle({
+    Name = "Configurações Avançadas",
+    Description = "Mostra opções avançadas de lag",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- Mostra controles avançados
+            Tab9:AddSlider({
+                Name = "Objetos por Jogador",
+                Description = "Quantidade máxima de objetos",
+                Min = 10,
+                Max = 200,
+                Default = 50,
+                Callback = function(value)
+                    lagConfig.maxLagObjects = value
+                end
+            })
+            
+            Tab9:AddSlider({
+                Name = "Delay Entre Jogadores",
+                Description = "Delay em segundos",
+                Min = 0.05,
+                Max = 1,
+                Default = 0.1,
+                Callback = function(value)
+                    lagConfig.delayBetweenPlayers = value
+                end
+            })
+            
+            Tab9:AddToggle({
+                Name = "Posições Aleatórias",
+                Description = "Usa posições aleatórias ao invés de fixas",
+                Default = true,
+                Callback = function(state)
+                    lagConfig.useRandomPos = state
+                end
+            })
+        end
+    end
+})
+
+-- Botão para TESTAR conexão do remote
+Tab9:AddButton({
+    Name = "🔍 Testar Remote 1Gu1n",
+    Description = "Testa se o remote está funcionando",
+    Callback = function()
+        local remote = ReplicatedStorage:FindFirstChild("RE")
+        if not remote then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Remote RE não encontrado!",
+                Duration = 3
+            })
+            return
+        end
+        
+        local gunRemote = remote:FindFirstChild("1Gu1n")
+        if not gunRemote then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Remote 1Gu1n não encontrado!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Teste rápido
+        local testArgs = createLagArgs(LocalPlayer)
+        if testArgs then
+            local success = pcall(function()
+                gunRemote:FireServer(unpack(testArgs))
+            end)
+            if success then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "✅ Sucesso",
+                    Text = "Remote 1Gu1n funcionando!",
+                    Duration = 3
+                })
+            else
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "❌ Falha",
+                    Text = "Remote respondeu mas falhou no envio",
+                    Duration = 3
+                })
+            end
+        end
+    end
+})
+
+-- AVISO DE RESPONSABILIDADE
+Tab9:AddParagraph({
+    Title = "⚠️ AVISO IMPORTANTE",
+    Content = "Use com cuidado! Pode causar lag no servidor inteiro e resultar em ban. Teste primeiro em servidores privados."
+})
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                    --fling com sofa--
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2310,5 +2649,6 @@ Tab9:AddButton({"Parar Tudo", function()
     originalProperties = nil
     showNotification("Tudo Parado", "Todas as funções foram desativadas.", nil)
 end})
+
 
 print("Lynix Hub - Apenas House e Troll carregado com sucesso!")
