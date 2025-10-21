@@ -466,6 +466,318 @@ local SpectateToggle = TrollTab:AddToggle({
     end
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+                                                   -- === TrollTab: Lag Server === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- Shutdown Custom Section
+local Section = TrollTab:AddSection({
+    Name = "Shutdown Personalizado"
+})
+
+-- Shutdown Server Button
+TrollTab:AddButton({
+    Name = "Shutdown Servidor",
+    Callback = function()
+        for m = 1, 495 do
+            local args = {
+                [1] = "PickingTools",
+                [2] = "FireHose"
+            }
+            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l"):InvokeServer(unpack(args))
+            local args = {
+                [1] = "FireHose",
+                [2] = "DestroyFireHose"
+            }
+            game:GetService("Players").LocalPlayer.Backpack.FireHose.ToolSound:FireServer(unpack(args))
+        end
+        local oldcf = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(999999999.414, -475, 999999999.414)
+        local rootpart = game.Players.LocalPlayer.Character.HumanoidRootPart
+        repeat wait() until rootpart.Parent == nil
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldcf
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Shutdown Concluído, Agora Vai Desligar",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait()
+        for _, ergeg in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            if ergeg.Name == "FireHose" then
+                ergeg.Parent = game.Players.LocalPlayer.Character
+            end
+        end
+        wait(0.2)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Iniciando duplicação, seja paciente",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait(0.5)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9999, -475, 9999)
+    end
+})
+
+-- Shutdown Server (Internet Error) Button
+TrollTab:AddButton({
+    Name = "Shutdown Servidor (Erro de Internet)",
+    Callback = function()
+        for m = 1, 535 do
+            local args = {
+                [1] = "PickingTools",
+                [2] = "FireHose"
+            }
+            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l"):InvokeServer(unpack(args))
+            local args = {
+                [1] = "FireHose",
+                [2] = "DestroyFireHose"
+            }
+            game:GetService("Players").LocalPlayer.Backpack.FireHose.ToolSound:FireServer(unpack(args))
+        end
+        local oldcf = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(999999999.414, -475, 999999999.414)
+        local rootpart = game.Players.LocalPlayer.Character.HumanoidRootPart
+        repeat wait() until rootpart.Parent == nil
+        repeat wait() until game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldcf
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Shutdown Concluído, Agora Vai Desligar",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait()
+        for _, ergeg in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            if ergeg.Name == "FireHose" then
+                ergeg.Parent = game.Players.LocalPlayer.Character
+            end
+        end
+        wait(0.2)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Iniciando duplicação, seja paciente",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait(0.5)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9999, -475, 9999)
+    end
+})
+
+-- Shutdown Server (Timeout Error) Button
+TrollTab:AddButton({
+    Name = "Shutdown Servidor (Erro de Conexão Expirada)",
+    Callback = function()
+        for m = 1, 635 do
+            local args = {
+                [1] = "PickingTools",
+                [2] = "FireHose"
+            }
+            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l"):InvokeServer(unpack(args))
+            local args = {
+                [1] = "FireHose",
+                [2] = "DestroyFireHose"
+            }
+            game:GetService("Players").LocalPlayer.Backpack.FireHose.ToolSound:FireServer(unpack(args))
+        end
+        local oldcf = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldcf
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Shutdown Concluído, Agora Vai Desligar",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait()
+        for _, ergeg in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            if ergeg.Name == "FireHose" then
+                ergeg.Parent = game.Players.LocalPlayer.Character
+            end
+        end
+        wait(0.2)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script de Dupe",
+            Text = "Iniciando duplicação, seja paciente",
+            Button1 = "Ok",
+            Duration = 5
+        })
+        wait(0.5)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9999, -475, 9999)
+    end
+})
+
+-- Lag Laptop Section
+local Section = TrollTab:AddSection({
+    Name = "Lag com Laptop"
+})
+
+-- Toggle State for Lag Laptop
+local toggles = { LagLaptop = false }
+
+-- Function to Simulate Normal Click
+local function clickNormally(object)
+    local clickDetector = object:FindFirstChildWhichIsA("ClickDetector")
+    if clickDetector then
+        fireclickdetector(clickDetector)
+    end
+end
+
+-- Function to Lag Game with Laptop
+local function lagarJogoLaptop(laptopPath, maxTeleports)
+    if laptopPath then
+        local teleportCount = 0
+        while teleportCount < maxTeleports and toggles.LagLaptop do
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = laptopPath.CFrame
+            clickNormally(laptopPath)
+            teleportCount = teleportCount + 1
+            wait(0.0001)
+        end
+    else
+        warn("Laptop não encontrado.")
+    end
+end
+
+-- Lag Laptop Toggle
+TrollTab:AddToggle({
+    Name = "Lag com Laptop",
+    Default = false,
+    Callback = function(state)
+        toggles.LagLaptop = state
+        if state then
+            local laptopPath = workspace:FindFirstChild("WorkspaceCom"):FindFirstChild("001_GiveTools"):FindFirstChild("Laptop")
+            if laptopPath then
+                spawn(function()
+                    lagarJogoLaptop(laptopPath, 999999999)
+                end)
+            else
+                warn("Laptop não encontrado.")
+            end
+        else
+            print("Lag com Laptop desativado.")
+        end
+    end
+})
+
+-- Lag Laptop Paragraph
+TrollTab:AddParagraph({
+    "Informação de Lag",
+    "O efeito de lag começa após 35 segundos"
+})
+
+-- Lag Phone Section
+local Section = TrollTab:AddSection({
+    Name = "Lag com Telefone"
+})
+
+-- Toggle State for Lag Phone
+toggles.LagPhone = false
+
+-- Function to Lag Game with Phone
+local function lagarJogoPhone(phonePath, maxTeleports)
+    if phonePath then
+        local teleportCount = 0
+        while teleportCount < maxTeleports and toggles.LagPhone do
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = phonePath.CFrame
+            clickNormally(phonePath)
+            teleportCount = teleportCount + 1
+            wait(0.01)
+        end
+    else
+        warn("Telefone não encontrado.")
+    end
+end
+
+-- Lag Phone Toggle
+TrollTab:AddToggle({
+    Name = "Lag com Telefone",
+    Default = false,
+    Callback = function(state)
+        toggles.LagPhone = state
+        if state then
+            local phonePath = workspace:FindFirstChild("WorkspaceCom"):FindFirstChild("001_CommercialStores"):FindFirstChild("CommercialStorage1"):FindFirstChild("Store"):FindFirstChild("Tools"):FindFirstChild("Iphone")
+            if phonePath then
+                spawn(function()
+                    lagarJogoPhone(phonePath, 999999)
+                end)
+            else
+                warn("Telefone não encontrado.")
+            end
+        else
+            print("Lag com Telefone desativado.")
+        end
+    end
+})
+
+-- Lag Phone Paragraph
+TrollTab:AddParagraph({
+    "Informação de Lag",
+    "O script começa a causar lag após 35 segundos"
+})
+
+local Section = TrollTab:AddSection({
+    Name = "Lag com Bomba"
+})
+
+local BombActive = false
+
+TrollTab:AddToggle({
+    Name = "Lag com Bomba",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            BombActive = true
+
+            local Player = game.Players.LocalPlayer
+            local Character = Player.Character or Player.CharacterAdded:Wait()
+            local RootPart = Character:WaitForChild("HumanoidRootPart")
+            local WorkspaceService = game:GetService("Workspace")
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Bomb = WorkspaceService:WaitForChild("WorkspaceCom"):WaitForChild("001_CriminalWeapons"):WaitForChild("GiveTools"):WaitForChild("Bomb")
+
+            task.spawn(function()
+                while BombActive do
+                    if Bomb and RootPart then
+                        RootPart.CFrame = Bomb.CFrame
+                        fireclickdetector(Bomb.ClickDetector) -- Aciona o ClickDetector da bomba
+                        task.wait(0.00001) -- Delay mínimo para evitar travamentos
+                    else
+                        task.wait(0.0001) 
+                    end
+                end
+            end)
+
+            task.spawn(function()
+                while BombActive do
+                    if Bomb and RootPart then
+                        local VirtualInputManager = game:GetService("VirtualInputManager")
+                        VirtualInputManager:SendMouseButtonEvent(500, 500, 0, true, game, 0) 
+                        task.wait(1.5)
+                        VirtualInputManager:SendMouseButtonEvent(500, 500, 0, false, game, 0) 
+
+                        -- Executa o FireServer com o nome do jogador
+                        local args = {
+                            [1] = "Bomb" .. Player.Name -- Usa o nome do jogador atual
+                        }
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Blo1wBomb1sServe1r"):FireServer(unpack(args))
+                    end
+                    task.wait(1.5) -- Intervalo de 1 segundo para clique e FireServer
+                end
+            end)
+        else
+            -- Desativando a funcionalidade
+            BombActive = false
+        end
+    end
+})
+
+TrollTab:AddParagraph({
+    "Informação de Lag",
+    "O script começa a causar lag após 35 segundos"
+})
+
 -- Fling section
 TrollTab:AddSection({"Fling"})
 
