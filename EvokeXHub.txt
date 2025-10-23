@@ -1,0 +1,934 @@
+-- =======================================================
+-- ⛩️ EvokeXHub ⛩️ | Brookhaven🏘️ 1.0 Pro
+-- Criador: EDDYZIN
+-- =======================================================
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+-- Biblioteca UI
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/lynix-dev/effective-octo-journey/refs/heads/main/bluelib.txt"))()
+
+-- Criando janela principal
+local Window = redzlib:MakeWindow({
+    Title = "⛩️ EvokeXHub ⛩️ | Brookhaven🏘️ 1.0 Pro",
+    SubTitle = "by EDDYZIN",
+    SaveFolder = "EvokeXHub"
+})
+
+-- =======================================================
+-- Criação das abas
+-- =======================================================
+local Tab1  = Window:MakeTab({"Credits", "info"})
+local Tab2  = Window:MakeTab({"Fun", "fun"})
+local Tab3  = Window:MakeTab({"Avatar", "shirt"})
+local Tab4  = Window:MakeTab({"House", "home"})
+local Tab5  = Window:MakeTab({"Car", "car"})
+local Tab6  = Window:MakeTab({"RGB", "brush"})
+local Tab7  = Window:MakeTab({"Music All", "radio"})
+local Tab8  = Window:MakeTab({"Music", "music"})
+local Tab9  = Window:MakeTab({"Troll", "skull"})
+local Tab10 = Window:MakeTab({"Lag Server", "bomb"})
+local Tab11 = Window:MakeTab({"ADM", "shield"})
+local Tab12 = Window:MakeTab({"Teleportes", "map-pin"})
+local Tab13 = Window:MakeTab({"Premium", "gamepass"})
+
+-- =======================================================
+-- Tab1: Créditos
+-- =======================================================
+Tab1:AddSection({"Créditos do Hub"})
+
+Tab1:AddDiscordInvite({
+    Name = "Discord Oficial",
+    Description = "Entre no Discord para novidades",
+    Logo = "rbxassetid://",
+    Invite = "https://discord.gg/hudmbpa3T",
+})
+
+Tab1:AddParagraph({"Criador", "EDDYZIN"})
+
+-- =======================================================
+-- Tab2: Fun
+-- =======================================================
+local Section = Tab2:AddSection({"Player Character"})
+
+local selectedPlayerName = nil
+local headsitActive = false
+
+local function headsitOnPlayer(targetPlayer)
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("Head") then
+        warn("Jogador alvo sem cabeça ou personagem.")
+        return false
+    end
+    local targetHead = targetPlayer.Character.Head
+    local localRoot = character:FindFirstChild("HumanoidRootPart")
+    if not localRoot then
+        warn("Seu personagem não tem HumanoidRootPart.")
+        return false
+    end
+
+    localRoot.CFrame = targetHead.CFrame * CFrame.new(0, 2.2, 0)
+
+    for _, v in pairs(localRoot:GetChildren()) do
+        if v:IsA("WeldConstraint") then
+            v:Destroy()
+        end
+    end
+
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = localRoot
+    weld.Part1 = targetHead
+    weld.Parent = localRoot
+
+    if humanoid then
+        humanoid.Sit = true
+    end
+
+    print("Headsit ativado em " .. targetPlayer.Name)
+    return true
+end
+
+local function removeHeadsit()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local localRoot = character:FindFirstChild("HumanoidRootPart")
+    if localRoot then
+        for _, v in pairs(localRoot:GetChildren()) do
+            if v:IsA("WeldConstraint") then
+                v:Destroy()
+            end
+        end
+    end
+    if humanoid then
+        humanoid.Sit = false
+    end
+
+    print("Headsit desativado.")
+end
+
+local function findPlayerByPartialName(partial)
+    partial = partial:lower()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Name:lower():sub(1, #partial) == partial then
+            return player
+        end
+    end
+    return nil
+end
+
+local function notifyPlayerSelected(player)
+    local StarterGui = game:GetService("StarterGui")
+    local thumbType = Enum.ThumbnailType.HeadShot
+    local thumbSize = Enum.ThumbnailSize.Size100x100
+    local content, _ = Players:GetUserThumbnailAsync(player.UserId, thumbType, thumbSize)
+
+    StarterGui:SetCore("SendNotification", {
+        Title = "Player Selecionado",
+        Text = player.Name .. " foi selecionado!",
+        Icon = content,
+        Duration = 5
+    })
+end
+
+Tab2:AddTextBox({
+    Name = "Nome do Jogador",
+    Description = "Digite parte do nome",
+    PlaceholderText = "ex: lo → EDDYZIN",
+    Callback = function(Value)
+        local foundPlayer = findPlayerByPartialName(Value)
+        if foundPlayer then
+            selectedPlayerName = foundPlayer.Name
+            notifyPlayerSelected(foundPlayer)
+        else
+            warn("Nenhum jogador encontrado com esse nome.")
+        end
+    end
+})
+
+Tab2:AddButton({"", function()
+    if not selectedPlayerName then return end
+    if not headsitActive then
+        local target = Players:FindFirstChild(selectedPlayerName)
+        if target and headsitOnPlayer(target) then
+            headsitActive = true
+        end
+    else
+        removeHeadsit()
+        headsitActive = false
+    end
+end})
+
+-- Aqui você continua adicionando todas as funções que já foram preparadas (Speed, Jump, Noclip, ESP, RGB, etc.)
+
+--------Troll Tab9------
+------------------------------
+
+
+Tab9:AddSection({ "Naruto" })
+
+
+
+shinraSound = nil
+
+cancelShinra = false
+
+
+
+Tab9:AddButton({
+
+    Name = "[OP] Shinra Tensei - Pain",
+
+    Callback = function()
+
+local TextChatService = game:GetService("TextChatService")
+
+local Lighting = game:GetService("Lighting")
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+
+
+
+cancelShinra = false
+
+
+
+if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then 
+
+    TextChatService.TextChannels.RBXGeneral:SendAsync(
+
+        "hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rShinra Tensei..."
+
+    )
+
+else 
+
+end
+
+
+
+task.spawn(function()
+
+local player = game.Players.LocalPlayer
+
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+
+    local root = player.Character.HumanoidRootPart
+
+
+
+    local bodyPos = Instance.new("BodyPosition")
+
+    bodyPos.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+
+    bodyPos.Position = root.Position
+
+    bodyPos.Parent = root
+
+
+
+    local targetUp = root.Position + Vector3.new(0, 10, 0)
+
+    for i = 1, 10 do
+
+        bodyPos.Position = bodyPos.Position:Lerp(targetUp, 0.1)
+
+        task.wait(0.03)
+
+    end
+
+
+
+    task.wait(2)
+
+
+
+    for i = 1, 10 do
+
+        bodyPos.Position = bodyPos.Position:Lerp(root.Position, 0.1)
+
+        task.wait(0.03)
+
+    end
+
+    
+
+    bodyPos:Destroy()
+
+end)
+
+
+
+local RE = ReplicatedStorage:WaitForChild("RE")
+
+local ClearEvent = RE:FindFirstChild("1Clea1rTool1s")
+
+local ToolEvent = RE:FindFirstChild("1Too1l")
+
+local FireEvent = RE:FindFirstChild("1Gu1n")
+
+
+
+local function clearAllTools()
+
+    if ClearEvent then
+
+        ClearEvent:FireServer("ClearAllTools")
+
+    end
+
+end
+
+
+
+local function getAssault()
+
+    if ToolEvent then
+
+        ToolEvent:InvokeServer("PickingTools", "Assault")
+
+    end
+
+end
+
+
+
+local function hasAssault()
+
+    return Player.Backpack:FindFirstChild("Assault") ~= nil
+
+end
+
+
+
+local function fireAtPart(targetPart)
+
+    local gunScript = Player.Backpack:FindFirstChild("Assault")
+
+        and Player.Backpack.Assault:FindFirstChild("GunScript_Local")
+
+
+
+    if not gunScript or not targetPart then return end
+
+
+
+    local args = {
+
+        targetPart,
+
+        targetPart,
+
+        Vector3.new(1e14, 1e14, 1e14),
+
+        targetPart.Position,
+
+        gunScript:FindFirstChild("MuzzleEffect"),
+
+        gunScript:FindFirstChild("HitEffect"),
+
+        0,
+
+        0,
+
+        { false },
+
+        {
+
+            25,
+
+            Vector3.new(100, 100, 100),
+
+            BrickColor.new(29),
+
+            0.25,
+
+            Enum.Material.SmoothPlastic,
+
+            0.25
+
+        },
+
+        true,
+
+        false
+
+    }
+
+
+
+    FireEvent:FireServer(unpack(args))
+
+end
+
+
+
+local function fireAtAllPlayers(times)
+
+    for i = 1, times do
+
+        if cancelShinra then break end
+
+        for _, player in ipairs(Players:GetPlayers()) do
+
+            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+
+                fireAtPart(player.Character.HumanoidRootPart)
+
+                task.wait(0.1)
+
+            end
+
+        end
+
+    end
+
+end
+
+
+
+local selectedAudioID = 127171723747143
+
+
+
+task.spawn(function()
+
+local remote = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Gu1nSound1s")
+
+if remote then
+
+remote:FireServer(workspace, selectedAudioID, 1)
+
+end
+
+
+
+local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+
+if root then
+
+local sound = Instance.new("Sound")
+
+sound.SoundId = "rbxassetid://" .. selectedAudioID
+
+sound.Volume = 1
+
+sound.Looped = false
+
+sound.Parent = root
+
+sound:Play()
+
+sound.Ended:Connect(function() sound:Destroy() end)
+
+else
+
+end
+
+end)
+
+            
+
+task.spawn(function()
+
+    while not cancelShinra do
+
+        clearAllTools()
+
+        getAssault()
+
+
+
+        repeat
+
+            task.wait(0.2)
+
+        until hasAssault() or cancelShinra
+
+
+
+        if not cancelShinra then
+
+            fireAtAllPlayers(3)
+
+            task.wait(1)
+
+        end
+
+    end
+
+end)
+
+end
+
+})
+
+
+
+Tab9:AddButton({
+
+    Name = "Cancel Shinra Tensei",
+
+    Callback = function()
+
+        cancelShinra = true
+
+    
+
+    if shinraSound then
+
+            shinraSound:Stop()
+
+            shinraSound:Destroy()
+
+            shinraSound = nil
+
+        end
+
+    end
+
+})
+
+
+
+Tab9:AddSection({ "Jujutsu Kaisen" })
+
+
+
+cancelExpansion = false
+
+expansionSound = nil
+
+expansionModel = nil
+
+originalSky = nil
+
+
+
+Tab9:AddButton({
+
+    Name = "[OP] Domain Expansion - Gojo",
+
+    Callback = function()
+
+local TextChatService = game:GetService("TextChatService")
+
+local Lighting = game:GetService("Lighting")
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+
+
+
+cancelExpansion = false
+
+
+
+if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then 
+
+    TextChatService.TextChannels.RBXGeneral:SendAsync(
+
+        "hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rDomain Expansion..."
+
+    )
+
+else 
+
+end
+
+
+
+local function ativarDominio()
+
+    local char = Player.Character or Player.CharacterAdded:Wait()
+
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+
+
+    local dominio = Instance.new("Model", workspace)
+
+    dominio.Name = "InfiniteVoid"
+
+    expansionModel = dominio
+
+
+
+    local esfera = Instance.new("Part")
+
+    esfera.Shape = Enum.PartType.Ball
+
+    esfera.Size = Vector3.new(300, 300, 300)
+
+    esfera.Position = hrp.Position
+
+    esfera.Anchored = true
+
+    esfera.CanCollide = false
+
+    esfera.Material = Enum.Material.ForceField
+
+    esfera.Transparency = 0.3
+
+    esfera.Color = Color3.fromRGB(0, 0, 0)
+
+    esfera.Parent = dominio
+
+
+
+    local luz = Instance.new("PointLight", esfera)
+
+    luz.Color = Color3.fromRGB(0, 153, 255)
+
+    luz.Brightness = 10
+
+    luz.Range = 300
+
+
+
+    local ps = Instance.new("ParticleEmitter", esfera)
+
+    ps.Texture = "rbxassetid://243660364"
+
+    ps.Color = ColorSequence.new(Color3.fromRGB(0, 153, 255))
+
+    ps.LightEmission = 1
+
+    ps.Size = NumberSequence.new(3)
+
+    ps.Transparency = NumberSequence.new(0.2)
+
+    ps.Rate = 1000
+
+    ps.Lifetime = NumberRange.new(2)
+
+    ps.Speed = NumberRange.new(0)
+
+    ps.VelocitySpread = 180
+
+
+
+    local som = Instance.new("Sound", esfera)
+
+    som.SoundId = "rbxassetid://1843527678"
+
+    som.Volume = 2
+
+    som.Looped = true
+
+    som:Play()
+
+    expansionSound = som
+
+
+
+    originalSky = Lighting:FindFirstChildOfClass("Sky")
+
+    if originalSky then
+
+        originalSky.Parent = nil
+
+    end
+
+
+
+    local newSky = Instance.new("Sky", Lighting)
+
+    newSky.SkyboxBk = "rbxassetid://159454299"
+
+    newSky.SkyboxDn = "rbxassetid://159454296"
+
+    newSky.SkyboxFt = "rbxassetid://159454293"
+
+    newSky.SkyboxLf = "rbxassetid://159454286"
+
+    newSky.SkyboxRt = "rbxassetid://159454300"
+
+    newSky.SkyboxUp = "rbxassetid://159454288"
+
+end
+
+
+
+ativarDominio()
+
+
+
+local selectedAudioID = 140031333626044
+
+
+
+task.spawn(function()
+
+    while not cancelExpansion do
+
+        local remote = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Gu1nSound1s")
+
+        if remote then
+
+            remote:FireServer(workspace, selectedAudioID, 1)
+
+        end
+
+
+
+        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+
+        if root then
+
+            local sound = Instance.new("Sound")
+
+            sound.SoundId = "rbxassetid://" .. selectedAudioID
+
+            sound.Volume = 1
+
+            sound.Looped = false
+
+            sound.Parent = root
+
+            sound:Play()
+
+            sound.Ended:Connect(function() sound:Destroy() end)
+
+            task.wait(sound.TimeLength + 0.1)
+
+        else
+
+            break
+
+        end
+
+    end
+
+end)
+
+
+
+local RE = ReplicatedStorage:WaitForChild("RE")
+
+local ClearEvent = RE:FindFirstChild("1Clea1rTool1s")
+
+local ToolEvent = RE:FindFirstChild("1Too1l")
+
+local FireEvent = RE:FindFirstChild("1Gu1n")
+
+
+
+local function clearAllTools()
+
+    if ClearEvent then
+
+        ClearEvent:FireServer("ClearAllTools")
+
+    end
+
+end
+
+
+
+local function getAssault()
+
+    if ToolEvent then
+
+        ToolEvent:InvokeServer("PickingTools", "Assault")
+
+    end
+
+end
+
+
+
+local function hasAssault()
+
+    return Player.Backpack:FindFirstChild("Assault") ~= nil
+
+end
+
+
+
+local function fireAtPart(targetPart)
+
+    local gunScript = Player.Backpack:FindFirstChild("Assault")
+
+        and Player.Backpack.Assault:FindFirstChild("GunScript_Local")
+
+
+
+    if not gunScript or not targetPart then return end
+
+
+
+    local args = {
+
+        targetPart,
+
+        targetPart,
+
+        Vector3.new(1e14, 1e14, 1e14),
+
+        targetPart.Position,
+
+        gunScript:FindFirstChild("MuzzleEffect"),
+
+        gunScript:FindFirstChild("HitEffect"),
+
+        0,
+
+        0,
+
+        { false },
+
+        {
+
+            25,
+
+            Vector3.new(100, 100, 100),
+
+            BrickColor.new(29),
+
+            0.25,
+
+            Enum.Material.SmoothPlastic,
+
+            0.25
+
+        },
+
+        true,
+
+        false
+
+    }
+
+
+
+    FireEvent:FireServer(unpack(args))
+
+end
+
+
+
+local function fireAtAllPlayers(times)
+
+    for i = 1, times do
+
+        if cancelExpansion then break end
+
+        for _, player in ipairs(Players:GetPlayers()) do
+
+            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+
+                fireAtPart(player.Character.HumanoidRootPart)
+
+                task.wait(0.1)
+
+            end
+
+        end
+
+    end
+
+end
+
+
+
+task.spawn(function()
+
+    while not cancelExpansion do
+
+        clearAllTools()
+
+        getAssault()
+
+
+
+        repeat
+
+            task.wait(0.2)
+
+        until hasAssault() or cancelExpansion
+
+
+
+        if not cancelExpansion then
+
+            fireAtAllPlayers(3)
+
+            task.wait(1)
+
+        end
+
+    end
+
+end)
+
+end
+
+})
+
+
+
+Tab9:AddButton({
+
+    Name = "Cancel Domain Expansion",
+
+    Callback = function()
+
+        cancelExpansion = true
+
+
+
+        if expansionSound then
+
+            expansionSound:Stop()
+
+            expansionSound:Destroy()
+
+            expansionSound = nil
+
+        end
+
+
+
+        if expansionModel and expansionModel.Parent then
+
+            expansionModel:Destroy()
+
+            expansionModel = nil
+
+        end
+
+
+
+        local Lighting = game:GetService("Lighting")
+
+        local currentSky = Lighting:FindFirstChildOfClass("Sky")
+
+        if currentSky then currentSky:Destroy() end
+
+
+
+        if originalSky then
+
+            originalSky.Parent = Lighting
+
+            originalSky = nil
+
+        end
+
+    end
+
+})
