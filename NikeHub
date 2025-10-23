@@ -466,6 +466,201 @@ local SpectateToggle = TrollTab:AddToggle({
     end
 })
 
+----troll v2 lag servidor 
+
+-- Serviços e Globals (adicione se não tiver)
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")  -- Para loops suaves
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+-- Assuma RE folder e remotes (adicione um DamageEvent se o jogo tiver; senão, use FireEvent pra dano)
+local RE = ReplicatedStorage:WaitForChild("RE")
+local ClearEvent = RE:FindFirstChild("1Clea1rTool1s")
+local ToolEvent = RE:FindFirstChild("1Too1l")
+local FireEvent = RE:FindFirstChild("1Gu1n")
+local SoundRemote = RE:FindFirstChild("1Gu1nSound1s")
+local DamageEvent = RE:FindFirstChild("DamagePlayer") or FireEvent  -- Fallback pra dano; adapte
+
+-- Funções Globais (de tools, do código anterior - copie se precisar)
+local function clearAllTools() if ClearEvent then pcall(ClearEvent.FireServer, ClearEvent, "ClearAllTools") end end
+local function getAssault() if ToolEvent then pcall(ToolEvent.InvokeServer, ToolEvent, "PickingTools", "Assault") end end
+local function hasAssault() return Player.Backpack:FindFirstChild("Assault") ~= nil end
+local function fireAtPart(targetPart) 
+    local char = Player.Character; if not char then return end
+    local gunScript = char:FindFirstChild("Assault") and char.Assault:FindFirstChild("GunScript_Local")
+    if not gunScript or not targetPart then return end
+    local args = {targetPart, targetPart, Vector3.new(1e14,1e14,1e14), targetPart.Position, gunScript:FindFirstChild("MuzzleEffect"), gunScript:FindFirstChild("HitEffect"), 0,0,{false}, {25, Vector3.new(100,100,100), BrickColor.new(29),0.25,Enum.Material.SmoothPlastic,0.25}, true, false}
+    pcall(FireEvent.FireServer, FireEvent, unpack(args))
+end
+local function fireAtAllPlayers(times, cancelFlag) 
+    for i=1,times do if cancelFlag[1] then break end
+        for _,p in ipairs(Players:GetPlayers()) do if p~=Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then fireAtPart(p.Character.HumanoidRootPart); task.wait(0.05) end end  -- Delay menor pra mais agressivo
+    end
+end
+local function spamChat(message) 
+    local TextChatService = game:GetService("TextChatService")
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then TextChatService.TextChannels.RBXGeneral:SendAsync(message) end
+end
+
+-- Seção Jujutsu Kaisen (Avançada)
+local cancelExpansion = false
+local expansionActive = false
+local expansionModel = nil
+local expansionSounds = {}
+local originalSky = nil
+local expansionConnection = nil  -- Pra loop de DoT
+local radius = 250  -- Raio do domínio (expande pra 500)
+
+TrollTab:AddSection({"Jujutsu Kaisen"})
+
+TrollTab:AddToggle({  -- Toggle em vez de button
+    Name = "[OP] Domain Expansion - Gojo (Avançado)",
+    Default = false,
+    Callback = function(state)
+        expansionActive = state
+        if state then
+            cancelExpansion = false
+            spamChat("hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rDomain Expansion: Infinite Void!")
+            
+            ativarDominioAvancado()  -- Função principal
+            
+            -- Loop de Disparos (agora mais agressivo: 5 rodadas)
+            local cancelFlag = {cancelExpansion}
+            task.spawn(function()
+                while not cancelFlag[1] do
+                    clearAllTools(); getAssault()
+                    repeat task.wait(0.1) until hasAssault() or cancelFlag[1]  -- Espera mais rápida
+                    if not cancelFlag[1] then fireAtAllPlayers(5, cancelFlag); task.wait(0.8) end  -- Mais tiros, menos wait
+                end
+            end)
+            
+            -- Loop de Som Extra (ID válido: som de "vazio")
+            local soundID = 1843527678
+            task.spawn(function()
+                while not cancelExpansion do
+                    if SoundRemote then pcall(SoundRemote.FireServer, SoundRemote, workspace, soundID, 1.5) end  -- Volume maior
+                    local char = Player.Character; if char then
+                        local root = char:FindFirstChild("HumanoidRootPart"); if root then
+                            local sound = Instance.new("Sound", root); sound.SoundId = "rbxassetid://" .. soundID; sound.Volume = 1.2; sound.Looped = false; sound:Play()
+                            table.insert(expansionSounds, sound)
+                            sound.Ended:Connect(function() if sound then sound:Destroy(); table.remove(expansionSounds, table.find(expansionSounds, sound)) end end)
+                            task.wait(3)  -- Intervalo pro loop de som
+                        end
+                    else break end
+                end
+            end)
+        else
+            cancelarDominioAvancado()
+        end
+    end
+})
+
+-- Função Principal: Ativação Avançada
+function ativarDominioAvancado()
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    
+    -- Cria Modelo
+    local dominio = Instance.new("Model"); dominio.Name = "InfiniteVoidAdvanced"; dominio.Parent = workspace; expansionModel = dominio
+    
+    -- Esfera Principal (começa pequena)
+    local esfera = Instance.new("Part", dominio); esfera.Shape = Enum.PartType.Ball; esfera.Size = Vector3.new(10,10,10); esfera.Position = hrp.Position; 
+    esfera.Anchored = true; esfera.CanCollide = false; esfera.Material = Enum.Material.ForceField; esfera.Transparency = 0.5; 
+    esfera.Color = Color3.fromRGB(0,0,50);  -- Azul escuro pro vazio
+    
+    -- Tween de Expansão (5s pra expandir)
+    local expandTween = TweenService:Create(esfera, TweenInfo.new(5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Vector3.new(500,500,500), Transparency = 0.2})
+    expandTween:Play()
+    radius = 250  -- Atualiza raio final
+    
+    -- Luz Pulsante
+    local luz = Instance.new("PointLight", esfera); luz.Color = Color3.fromRGB(0,153,255); luz.Brightness = 5; luz.Range = 100
+    local luzTween = TweenService:Create(luz, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Brightness = 15, Range = 500})
+    luzTween:Play()
+    
+    -- Partículas Avançadas (3 emitters)
+    -- Principal: Azul emitindo pra fora
+    local ps1 = Instance.new("ParticleEmitter", esfera); ps1.Texture = "rbxassetid://243660364"; ps1.Color = ColorSequence.new(Color3.fromRGB(0,153,255)); 
+    ps1.LightEmission = 1; ps1.Size = NumberSequence.new{NumberSequenceKeypoint.new(0,2), NumberSequenceKeypoint.new(1,5)}; ps1.Transparency = NumberSequence.new(0.3); 
+    ps1.Rate = 500; ps1.Lifetime = NumberRange.new(3,5); ps1.Speed = NumberRange.new(20,50); ps1.VelocitySpread = 360; ps1.SpreadAngle = Vector2.new(180,180)
+    
+    -- Secundária: Roxo pra "vazio"
+    local ps2 = Instance.new("ParticleEmitter", esfera); ps2.Texture = "rbxassetid://241650934"; ps2.Color = ColorSequence.new(Color3.fromRGB(128,0,128)); 
+    ps2.Rate = 300; ps2.Lifetime = NumberRange.new(4); ps2.Speed = NumberRange.new(10,30); ps2.Acceleration = Vector3.new(0,-50,0)  -- Cai devagar
+    
+    -- Terceira: Negro pra distorção
+    local ps3 = Instance.new("ParticleEmitter", esfera); ps3.Texture = "rbxassetid://2999122327"; ps3.Color = ColorSequence.new(Color3.new(0,0,0)); 
+    ps3.Rate = 200; ps3.Lifetime = NumberRange.new(2,4); ps3.Speed = NumberRange.new(5); ps3.Drag = 5  -- Lento e pegajoso
+    
+    -- Som Loopado na Esfera
+    local som = Instance.new("Sound", esfera); som.SoundId = "rbxassetid://1843527678"; som.Volume = 3; som.Looped = true; som:Play()
+    table.insert(expansionSounds, som)
+    
+    -- Efeitos no Lighting (Distortion)
+    originalSky = Lighting:FindFirstChildOfClass("Sky"); if originalSky then originalSky.Parent = nil end
+    local newSky = Instance.new("Sky", Lighting); newSky.SkyboxBk = "rbxassetid://159454299"  -- Texturas originais, mas adicionei
+    newSky.SkyboxDn = "rbxassetid://159454296"; newSky.SkyboxFt = "rbxassetid://159454293"; newSky.SkyboxLf = "rbxassetid://159454286"
+    newSky.SkyboxRt = "rbxassetid://159454300"; newSky.SkyboxUp = "rbxassetid://159454288"
+    
+    -- ColorCorrection pra "sobrecarga" (desbota cores)
+    local cc = Instance.new("ColorCorrectionEffect", Lighting); cc.Brightness = 0; cc.Contrast = -0.5; cc.Saturation = -0.8; cc.TintColor = Color3.fromRGB(100,150,255)
+    local ccTween = TweenService:Create(cc, TweenInfo.new(10, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Brightness = 0.2, Contrast = 0, Saturation = 0})
+    ccTween:Play()
+    
+    -- Efeito no Seu Personagem (Flutuar)
+    if hrp then
+        local bodyVel = Instance.new("BodyVelocity", hrp); bodyVel.MaxForce = Vector3.new(0, math.huge, 0); bodyVel.Velocity = Vector3.new(0, 2, 0)  -- Flutua devagar
+        task.wait(10); if bodyVel then bodyVel:Destroy() end  -- Remove após 10s
+    end
+    
+    -- Loop de DoT (Dano Over Time) - Checa players dentro
+    expansionConnection = RunService.Heartbeat:Connect(function()
+        if cancelExpansion then return end
+        local center = esfera.Position
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (p.Character.HumanoidRootPart.Position - center).Magnitude
+                if dist < radius then
+                    -- Dano passivo (5 HP/seg, mas só a cada 1s pra não spam)
+                    pcall(function() DamageEvent:FireServer(p.Character.Humanoid, 5) end)  -- Envia dano pro server
+                    -- Efeito Visual: Transparência temporária (client-side, só você vê)
+                    local humanoid = p.Character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        for _, part in ipairs(p.Character:GetChildren()) do if part:IsA("BasePart") then
+                            TweenService:Create(part, TweenInfo.new(0.5), {Transparency = 0.7}):Play()
+                            task.spawn(function() task.wait(0.5); TweenService:Create(part, TweenInfo.new(0.5), {Transparency = 0}):Play() end)
+                        end end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Função de Cancel Avançada
+function cancelarDominioAvancado()
+    cancelExpansion = true
+    expansionActive = false
+    
+    -- Para sons
+    for _, sound in ipairs(expansionSounds) do if sound then sound:Stop(); sound:Destroy() end end
+    expansionSounds = {}
+    
+    -- Destrói modelo e effects
+    if expansionModel then expansionModel:Destroy(); expansionModel = nil end
+    local currentSky = Lighting:FindFirstChildOfClass("Sky"); if currentSky then currentSky:Destroy() end
+    if originalSky then originalSky.Parent = Lighting; originalSky = nil end
+    local cc = Lighting:FindFirstChildOfClass("ColorCorrectionEffect"); if cc then cc:Destroy() end
+    
+    -- Para loops
+    if expansionConnection then expansionConnection:Disconnect(); expansionConnection = nil end
+end
+
+
+
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === TrollTab: Lag Server === --
 ---------------------------------------------------------------------------------------------------------------------------------
