@@ -1786,4 +1786,134 @@ Tab9:AddButton({"Parar Tudo", function()
 end})
 
 
-print("Lynix Hub - Apenas House e Troll carregado com sucesso!")
+-- Fling com Bola Solo (Brookhaven RP) - Bola vai sozinha, fling no target ao aproximar
+-- Press F: Lança bola no mais próximo | G: Em todos (cuidado!)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+-- Função pra spawnar e lançar bola sozinha
+local function launchBall(target)
+    if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
+        print("Target inválido!")
+        return
+    end
+    
+    local targetRoot = target.Character.HumanoidRootPart
+    local ball = game.Workspace:FindFirstChild("SoccerBall") -- Reusa se existir, ou spawna nova
+    if not ball then
+        -- Spawn uma SoccerBall nova (do Brookhaven)
+        local soccerModel = game:GetService("InsertService"):LoadAsset(168889214) -- ID da SoccerBall oficial
+        ball = soccerModel:FindFirstChild("SoccerBall"):Clone()
+        soccerModel:Destroy()
+        ball.Parent = game.Workspace
+    end
+    
+    -- Posição inicial: Perto de você, mas sem attachment (bola vai SOLA)
+    ball:SetPrimaryPartCFrame(CFrame.new(HumanoidRootPart.Position + Vector3.new(0, 5, 0)))
+    
+    -- Toma ownership da bola pra replicar movimento
+    pcall(function()
+        ball:SetPrimaryPartCFrame(ball.PrimaryPart.CFrame) -- Força update
+        if ball.PrimaryPart then ball.PrimaryPart:SetNetworkOwner(LocalPlayer) end
+    end)
+    
+    -- Tween pra mover bola em direção ao target (velocidade média)
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out) -- 2s pra chegar
+    local tween = TweenService:Create(ball.PrimaryPart, tweenInfo, {
+        CFrame = CFrame.new(targetRoot.Position + Vector3.new(math.random(-5,5), 0, math.random(-5,5)))
+    })
+    tween:Play()
+    
+    -- Loop de detecção: Quando bola < 10 studs do target, FLING!
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if not ball.Parent or not targetRoot.Parent then
+            connection:Disconnect()
+            return
+        end
+        
+        local distance = (ball.PrimaryPart.Position - targetRoot.Position).Magnitude
+        if distance <= 10 then -- Proximidade trigger
+            -- Fling REAL no target pro VOID
+            pcall(function()
+                targetRoot:SetNetworkOwner(LocalPlayer)
+            end)
+            
+            local bodyVel = Instance.new("BodyVelocity")
+            bodyVel.MaxForce = Vector3.new(100000, 100000, 100000) -- Força EXTREMA pro void
+            bodyVel.Velocity = Vector3.new(
+                math.random(-1000, 1000),  -- X caótico
+                math.random(500, 1500),    -- Y pro céu eterno
+                math.random(-1000, 1000)   -- Z caótico
+            )
+            bodyVel.Parent = targetRoot
+            Debris:AddItem(bodyVel, 3) -- 3s de fling louco
+            
+            -- Desabilita humanoid temporariamente pra fling limpo
+            local humanoid = target.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = true
+                wait(0.5)
+                humanoid.PlatformStand = false
+            end
+            
+            print("BOOM! Fling pro void em: " .. target.Name .. " (distância: " .. math.floor(distance) .. ")")
+            
+            -- Remove bola após fling
+            Debris:AddItem(ball, 1)
+            connection:Disconnect()
+        end
+    end)
+    
+    print("Bola lançada em: " .. target.Name .. " - Aguardando proximidade...")
+end
+
+-- Encontra nearest (mesmo de antes)
+local function getNearestPlayer()
+    local nearest, shortest = nil, math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if dist < shortest then
+                shortest = dist
+                nearest = player
+            end
+        end
+    end
+    return nearest
+end
+
+-- Inputs: F = nearest, G = all
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        local target = getNearestPlayer()
+        if target then launchBall(target) else print("Ninguém perto!") end
+    elseif input.KeyCode == Enum.KeyCode.G then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                spawn(function() launchBall(player) end) -- Paralelo pra all
+            end
+        end
+        print("Bolas lançadas em TODOS!")
+    end
+end)
+
+-- Update respawn
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    Character = newChar
+    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+end)
+
+print("Fling Bola Solo carregado! F=Nearest, G=All (bola vai sozinha + fling void)")
+
+
+
